@@ -1,9 +1,10 @@
 
 Data
-•	Corresponding .ns3 and .nev files
+- Corresponding .ns3 and .nev files
 
 Code
-This code calls on functions from Rina’s CLoSES-DataAnalysis repository
+- This code calls on functions from Rina’s CLoSES-DataAnalysis repository
+
 1.	Start raw nsx file clipping
 •	Open BIDS_data_clipping_front.m
 •	Type in the variables:
