@@ -15,12 +15,6 @@ cfgInfoPlot.maxAmpVal = 500;
 cfgInfoPlot.minAmpVal = -500;
 % ********************** 
 
-% % Files ********************** FRONT
-% fileNameDecider = 'Z:\Original Data\MG\MG157\MG157_Tasks\STIMULATION\MG157Decider\ClosedLoop_IID_2\DeciderData_CONTINUOUS_MG157_IIDs_211220_2008.mat';
-% fileNameNSxPerNSP{1} = 'Z:\Original Data\MG\MG157\MG157_Tasks\STIMULATION\ClosedLoopIIDs_2\NSP1\13-161102-010.ns3';
-% fileNameNSxPerNSP{2} = 'Z:\Original Data\MG\MG157\MG157_Tasks\STIMULATION\ClosedLoopIIDs_2\NSP2\13-161103-010.ns3';
-% % **********************
-
 % ********************** BACK
 excludeTrials.excludeTrialsNSX = [];
 excludeTrials.excludeTrialsDecider = [];
@@ -29,8 +23,8 @@ NSPindex = 1;
 
 %% Channels
 % ********************** BACK
-stimAINP.chNames = {'SYNC'}%,'SHAM','SEND STIM','DETECT'};
-stimAINP.chRealNames = {'SYNC'}%,'SEND STIM','RANDOM','DETECTED'};
+stimAINP.chNames = {'SYNC'};%,'SHAM','SEND STIM','DETECT'};
+stimAINP.chRealNames = {'SYNC'};%,'SEND STIM','RANDOM','DETECTED'};
 stimChannInfo.stimChNames = {};%{'LHH01','LHH02'};
 recChannInfo.pName = pName; 
 recChannInfo.chNames = {};% {'LHH03','LHH04','LHH05'};
@@ -114,41 +108,56 @@ if ~exist('eeg_data','var')
 end
 %eeg_data = dataBipolarPerCh{1};
 
+% if there is only one session in this nsx file, then start_end will be
+% [1x2]
+if size(start_end,1) == 1
+    if start_end(1,1) - buffer_time_data_points <= 1
+        buffered_start_end(1,1) = 1;
+    else
+        buffered_start_end(1,1) = start_end(1,1) - buffer_time_data_points;
+    end
+    
+    if start_end(1,2) + buffer_time_data_points >= length(eeg_data)
+        buffered_start_end(1,2) = length(eeg_data);
+    else
+        buffered_start_end(1,2) = start_end(1,2) + buffer_time_data_points;
+    end
+else
+    for i = 1:length(start_end)
+        % before start
+        if i == 1
+            max_buffer = start_end(i,1)-1;
+        else 
+            max_buffer = start_end(i,1) - start_end(i-1,2);
+        end
 
-for i = 1:length(start_end)
-    % before start
-    if i == 1
-        max_buffer = start_end(i,1);
-    else 
-        max_buffer = start_end(i,1) - start_end(i-1,2);
+        if max_buffer < buffer_time_data_points
+            curr_buffer = max_buffer;
+        else
+            curr_buffer = buffer_time_data_points;
+        end
+
+        curr_buffered_start = start_end(i,1) - curr_buffer;
+        buffered_start_end(i,1) = curr_buffered_start;
+
+        % after end
+        if i == length(start_end)
+            max_buffer = length(eeg_data) - start_end(i,2); % length()?: ok bc x axis is in datapoints not time
+        else
+            max_buffer = start_end(i+1,1) - start_end(i,2);
+        end
+
+        if max_buffer < buffer_time_data_points
+            curr_buffer = max_buffer;
+        else
+            curr_buffer = buffer_time_data_points;
+        end
+
+        curr_buffered_end = start_end(i,2) + curr_buffer;
+        buffered_start_end(i,2) = curr_buffered_end;
     end
-    
-    if max_buffer <= buffer_time_data_points
-        curr_buffer = max_buffer;
-    else
-        curr_buffer = buffer_time_data_points;
-    end
-    
-    curr_buffered_start = start_end(i,1) - curr_buffer;
-    buffered_start_end(i,1) = curr_buffered_start;
-    
-    % after end
-    if i == length(start_end)
-        max_buffer = length(eeg_data) - start_end(i,2); % length()?: ok bc x axis is in datapoints not time
-    else
-        max_buffer = start_end(i+1,1) - start_end(i,2);
-    end
-    
-    if max_buffer < buffer_time_data_points
-        curr_buffer = max_buffer;
-    else
-        curr_buffer = buffer_time_data_points;
-    end
-    
-    curr_buffered_end = start_end(i,2) + curr_buffer;
-    buffered_start_end(i,2) = curr_buffered_end;
-    
 end
+
 
 title('EEG will be clipped at the buffer lines:', 'FontSize', 25)
 buffer_colors = {'b','r','g','c','m','b--','r--','g--','c--','m--'};
@@ -158,12 +167,13 @@ for i = 1:size(start_end,1)
     hold off
 end
 
+pause(5)
 
 %% clip .MAT eeg at buffers
 % not actually saving .mat files, just plotting for visual check :)
-clipped_eeg = cell(length(start_end),1);
+clipped_eeg = cell(size(start_end,1),1);
 % saving different sessions (of diff length) into its own cell
-for i = 1:length(start_end)
+for i = 1:size(start_end,1)
     clipped_eeg{i} = eeg_data(buffered_start_end(i,1): buffered_start_end(i,2));
 end
 
@@ -171,8 +181,8 @@ figure(2)
 hold on
 
 % plotting clipped sessions seperately 
-for i = 1:length(start_end)
-    subplot(length(start_end),1,i);
+for i = 1:size(start_end,1)
+    subplot(size(start_end,1),1,i);
     plot(clipped_eeg{i},buffer_colors{i})
     title(['Clip # ',num2str(i)])
 end
