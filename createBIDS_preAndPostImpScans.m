@@ -25,7 +25,7 @@ postimpscan = fullfile(root_dir, project_label,['sub-' ieeg_sub], ['ses-' 'posti
 if ~exist(postimpscan,'dir')
     mkdir(postimpscan);  
 end 
-if DI<72 
+if strcmp(post_imp_scan,'CT') % DI<72 
     acq_id = 'CT';  
 end
 ieeg_sesanat='postimp';  % J: was previously named 'preimp'

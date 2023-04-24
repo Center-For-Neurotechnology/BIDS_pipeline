@@ -36,8 +36,9 @@ ieeg_json.HardwareFilters = HardwareFilters;
 ieeg_json.Manufacturer = 'Blackrock Microsystems'; % Manufacturer of the amplifier system
 ieeg_json.ManufacturersModelName = 'Neural Signal Processor (Cerebus), FrontEnd amplifiers, CereStim stimulator'; % Manufacturer's designation of the iEEG amplifier model
 ieeg_json.TaskDescription = 'Stimulation was delivered with a CereStim stimulator (Blackrock Microsystems, Salt Lake City, UT) using single pulse electrical stimulation (SPES). Current injection and return paths used neighboring contacts in a bipolar configuration.'; % Longer description of the task.
-ieeg_json.Instructions = 'A trained electroencephalographer examined ongoing recordings for epileptiform activity and asked participants if they experienced any sensations. The participants were awake and were aware that they were being stimulated but were blind to the stimulation timing and parameters.'; % Text of the instructions given to participants
+%ieeg_json.Instructions = 'A trained electroencephalographer examined ongoing recordings for epileptiform activity and asked participants if they experienced any sensations. The participants were awake and were aware that they were being stimulated but were blind to the stimulation timing and parameters.'; % Text of the instructions given to participants
 % before the recording.
+ieeg_json.Instructions = notes_on_instructions;
 ieeg_json.CogAtlasID = 'https://www.sciencedirect.com/science/article/pii/S1935861X22000456'; % URL of the corresponding Cognitive Atlas Task term
 ieeg_json.CogPOID = 'https://www.sciencedirect.com/science/article/pii/S1935861X22000456'; % URL of the corresponding CogPO term
 ieeg_json.InstitutionName = 'Massachusetts General Hospital'; % The name of the institution in charge of the equipment that produced the composite instances.

@@ -1,12 +1,9 @@
 
-PtInfo=readtable(HPStimFileList_2,'Sheet','MasterList');
-Patients=table2cell(PtInfo(1:end,1));
-List=table2cell(PtInfo(1:end,3));
+PtInfo=readtable(patient_id_map,'Sheet','Sheet1');
 
-PtInfo2=readtable(HPStimFileList_2,'Sheet','Sheet1');
-Patients2=table2cell(PtInfo2(1:end,1));
-Identifiers=table2cell(PtInfo2(1:end,3));
-Relabel=table2cell(PtInfo2(1:end,4));
+PatientName = string(table2cell(PtInfo(1,1))); % mg/bw name
+PatientNameList = string(table2cell(PtInfo(1,2)));  % "paper"
+Relabel = string(table2cell(PtInfo(1,3))); % de-ID name
 
 NameTitle={'Network','Amplitude','Stimulation_Matrix','Anesth','Single'};
 
@@ -16,16 +13,14 @@ SummaryArray=repmat({'NaN'},78,17);
 MissingFile=[];MissingFileLabel={};MissingFileSubcort=[];MissingFileLabelSubcort={};NotMissingFileSubcort=[];NotMissingFileLabelSubcort={};
 MatchedIDs={};
 clow=1;
-if isempty(Identifiers{DI}) == 1
-    fprintf('''Identifiers'' value for DI = %d is empty. Exiting.\n\n',round(DI))
+if isempty(PatientName) || isempty(PatientNameList) || isempty(Relabel) 
+    fprintf('Sheet ''Participant/Paper/Identifier'' values for are/is empty. Exiting.\n\n')
     return
 end
 
 for NT=1:5
-    PatientName=Patients{DI};
-    PatientNameList=List{DI};
     PatientNameParc=PatientName;
-    LoadDir=[Maindir,Patients{DI},'\'];
+    LoadDir=[Maindir,PatientName,'\']; 
     taskDir=dir([LoadDir,NameTitle{NT},'*']);
     for Tsk=1:length(taskDir)
         TASK=taskDir(Tsk).name;
@@ -46,7 +41,6 @@ for NT=1:5
                     load([SessFolder,'\FT_Analyzed\UpdatedFT_Analyzed\',FileLoad(1).name]) %Loading needed files
                     load([SessFolder,'\FT_Analyzed\UpdatedFT_Analyzed\',ParcellationsMapping(1).name])%Loading needed files
                     load([SessFolder,'\',TrialLoad(1).name],'TrialAlignedMat1','TrialAlignedMat2')%Loading trial information
-
                     %% This section was to fix some few files with weird trials or the wrong column order.
                     %  I can fix those specific examples later once this needs to be run 'for real'
                     %  J: assuming this is kept for all DI but 75
@@ -58,19 +52,11 @@ for NT=1:5
                             TrialAlignedMat2(TrialAlignedMat2(:,6)==1)=0;
                         end
                     end
-                    if NT==5 && DI==36 && Tsk==2
-                        TrialAlignedMat1=[TrialAlignedMat1(:,[1:5 7:12]) NaN*ones(size(TrialAlignedMat1,1),1)];
-                        TrialAlignedMat1(TrialAlignedMat1(:,6)==1)=0;
-                        if isempty(TrialAlignedMat2)==0
-                            TrialAlignedMat2=[TrialAlignedMat2(:,[1:5 7 6 8:12]) NaN*ones(size(TrialAlignedMat1,1),1)];
-                            TrialAlignedMat2(TrialAlignedMat2(:,6)==1)=0;
-                        end
-                    end
                     %% This section generates the new BIDS file format organization including the imaging folders
                     TaskName=(Taskload(session).name);
                     root_dir = [Bidsfolder,'\'];
                     ieeg_project = 'SinglePulseStimulation';
-                    ieeg_sub = Relabel{DI}; %Essential to name everything correctly.
+                    ieeg_sub = Relabel;
                     ieeg_ses = 'postimp';
                     taskName=[TaskName,RawBipolar];
                     taskName(taskName=='-' | taskName=='_')=[]; %underscores and dashes will break the BIDS system so all task names must have those removed.
@@ -116,14 +102,16 @@ for NT=1:5
                     createBIDS_electrodes_tsvStandardization  % J: simplified
                     createBIDS_staticJson   % J: simplified
                     createBIDS_BrainVision_and_EDF_WithFieldtrip % J: simplified with both brainvision and edf version
-
-                    SummaryArray(DI,1:3)= [Patients(DI), Relabel(DI), Identifiers(DI)];
+                 
+                    % J: is this even needed? even if so, can remove DI
+                    % dependency
+                    SummaryArray(1,1:3)= [{PatientName}, {Relabel}, {PatientNameList}]; 
                     if NT==1 || NT==4 || NT==5
-                        SummaryArray(DI,czv+3)={'Single Pulse, Multiple stimulation sites'};
+                        SummaryArray(1,czv+3)={'Single Pulse, Multiple stimulation sites'};
                     elseif NT==2
-                        SummaryArray(DI,czv+3)={'Single Pulse, Multiple stimulation current amplitudes'};
+                        SummaryArray(1,czv+3)={'Single Pulse, Multiple stimulation current amplitudes'};
                     elseif NT==3
-                        SummaryArray(DI,czv+3)={'Trains, Multiple frequencies and Current Amplitudes, Single pulse'};
+                        SummaryArray(1,czv+3)={'Trains, Multiple frequencies and Current Amplitudes, Single pulse'};
                     end
 
                     czv=czv+1;
@@ -133,4 +121,4 @@ for NT=1:5
     end
 end
 
-MatchedIDs(DI,1:3)=[Patients(DI),Identifiers(DI),Relabel(DI)]; % J: not used?
+MatchedIDs(1,1:3)=[{PatientName},{PatientNameList},{Relabel}]; % J: not used?
