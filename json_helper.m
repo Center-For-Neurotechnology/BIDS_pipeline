@@ -2,7 +2,7 @@ function json_helper(json_filename, json_structure)
 % this function saves a json file
 % INPUTS:
 %   - json_filename: string of the full path and name of json file to be saved (eg
-%   'C:/user/folder/filename')
+%   'C:/user/folder/filename.json')
 %   - json_structure: a structure containing the key-value pairs of the json file
 %   (eg json_structure with format json_structure.field = 'value') 
 jsonSaveDir = fileparts(json_filename);

@@ -13,8 +13,13 @@ fileNameNEVPerNSP{2} = 'E:\BIDStesting\local_data\MGxxx\StimulationDay3\NSP2\10-
 selChName1 = [35,36,82,83];%  % bipolar ch numbers to visualize in clipping plot
 buffer_time_minutes = 5; % time buffer (in minutes) before and after each session
 
+
+
+%% set uo BIDS directories
+directoryBIDS = 'E:\BIDStesting\BIDS_data'; % directoryBIDS/sub_XXXX/ses-postimp/ieeg
 %% 0. Config files
-json_filename = createBIDS_staticJson_configToInitJsonforMGHdata
+% create directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_coordsystem.json
+perParticipantCoordsystem(sub_XXXX, filename_MRI, directoryBIDS) 
 
 %% 1. calling function that does the clipping
 nsxFileWithclippedData = gettingClipTimes(pName,resultsPath,fileNameNSxPerNSP,fileNameNEVPerNSP,file_being_split,selChName1,buffer_time_minutes);
