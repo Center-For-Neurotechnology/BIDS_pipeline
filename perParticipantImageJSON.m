@@ -1,4 +1,4 @@
-function perParticipantImageJson(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS)
+function perParticipantImageJSON(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS)
 % this function is run once for each patient. It creates two json files
 % containing information about the preimplant and postimplant scan. The json files will be
 % saved in directoryBIDS/sub_XXXX/ses-preimp/anat and directoryBIDS/sub_XXXX/ses-postimp/anat

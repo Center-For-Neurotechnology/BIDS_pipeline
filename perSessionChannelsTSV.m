@@ -1,18 +1,20 @@
-function perSessionChannelsTSV(filename_nsp1_ns3,filename_nsp2_ns3)
+function perSessionChannelsTSV(filename_nsp1_ns3,filename_nsp2_ns3,channelStatus_nsp1,channelStatus_nsp2)
 %% output variables needed:
 % *** REQUIRED
 % channel name X
 % channel type X
 % units X
-% low cutoff ---------
-% hight cutoff --------
+% low cutoff X
+% hight cutoff X
 % *** RECOMMENDED
-% reference -----------
+% reference ----------- ask about this
 % group X
 % *** OPTIONAL
 % sampling frequency X
-% description notich ---------
-% status description ---------
+% description X
+% notch --------- (n/a?)
+% status ------------- load from mat files (nsp1/nsp2)
+% status description --------- (n/a?)
 
 
 %% temp variables
@@ -121,9 +123,22 @@ nsp1_units_temp = regexprep(string(nsp1_units), '\W', '');
 nsp2_units = extractfield(header_nsp2_ns3.ElectrodesInfo,'AnalogUnits')';
 nsp2_units_temp = regexprep(string(nsp2_units), '\W', '');
 
+%% get frequency cutoffs
+nsp1_lowCutoff = extractfield(header_nsp1_ns3.ElectrodesInfo,'LowFreqCorner')'/1000; % saved in mHz so /1000
+nsp1_highCutoff = extractfield(header_nsp1_ns3.ElectrodesInfo,'HighFreqCorner')'/1000;
+nsp2_lowCutoff = extractfield(header_nsp2_ns3.ElectrodesInfo,'LowFreqCorner')'/1000;
+nsp2_highCutoff = extractfield(header_nsp2_ns3.ElectrodesInfo,'HighFreqCorner')'/1000;
 
-%% 
- varargout = openNEV(varargin) % try opening nev file to get required vals missing from this tsv file (low/high cutoff frequencies)
+%% description (nsx is refernetial)
+nsp1_description = cell(size(nsp1_channelNames));
+nsp1_description(:) = {'referential/unipolar'};
+nsp2_description = cell(size(nsp2_channelNames));
+nsp2_description(:) = {'referential/unipolar'};
+
+
+
+
+%%  varargout = openNEV(varargin) % try opening nev file to get required vals missing from this tsv file (low/high cutoff frequencies)
  % and optional vals that angelique includes (reference, refernce, notch,
  % status, status description)
 
