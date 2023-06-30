@@ -1,4 +1,4 @@
-function perSessionChannelsTSV(filename_nsp1_ns3,filename_nsp2_ns3,channelStatus_nsp1,channelStatus_nsp2)
+function [hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2)
 %% output variables needed:
 % *** REQUIRED
 % channel name X
@@ -7,48 +7,43 @@ function perSessionChannelsTSV(filename_nsp1_ns3,filename_nsp2_ns3,channelStatus
 % low cutoff X
 % hight cutoff X
 % *** RECOMMENDED
-% reference ----------- ask about this
+% reference X
 % group X
 % *** OPTIONAL
 % sampling frequency X
 % description X
 % notch --------- (n/a?)
-% status ------------- load from mat files (nsp1/nsp2)
+% status ------------- X
 % status description --------- (n/a?)
 
-
-%% temp variables
-filename_nsp1_ns3 = 'Z:\Original Data\MG\MG151revised\MG151revised_Tasks\STIMULATION\NetworkWake1\NSP1\10-193513-001.ns3';
-filename_nsp2_ns3 = 'Z:\Original Data\MG\MG151revised\MG151revised_Tasks\STIMULATION\NetworkWake1\NSP2\10-193514-001.ns3';
-
+%% filenames of the output tables
+filename_channelsTSV_nsp1 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
+    taskName,'RAWNSP1_run-',ieeg_run,'_channels.tsv'];
+filename_channelsTSV_nsp2 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
+    taskName,'RAWNSP2_run-',ieeg_run,'_channels.tsv'];
 
 %% open nsx header
-header_nsp1_ns3 = openNSx(filename_nsp1_ns3,'noread');
-header_nsp2_ns3 = openNSx(filename_nsp2_ns3,'noread');
+headerNS3_nsp1 = openNSx(filenameNS3_nsp1,'noread');
+headerNS3_nsp2 = openNSx(filenameNS3_nsp2,'noread');
 
-%% getting sampling frequency
-nsp1_samplingFrequency = header_nsp1_ns3.MetaTags.SamplingFreq;
-nsp2_samplingFrequency = header_nsp2_ns3.MetaTags.SamplingFreq;
-
-
+%% REQUIRED
 %% get channel names
-nsp1_channelNames = extractfield(header_nsp1_ns3.ElectrodesInfo,'Label')';
-nsp1_channelNames = regexprep(string(nsp1_channelNames), '\W', '');
-nsp2_channelNames = extractfield(header_nsp2_ns3.ElectrodesInfo,'Label')';
-nsp2_channelNames = regexprep(string(nsp2_channelNames), '\W', '');
-
+channelNames_nsp1 = extractfield(headerNS3_nsp1.ElectrodesInfo,'Label')';
+channelNames_nsp1 = regexprep(string(channelNames_nsp1), '\W', '');
+channelNames_nsp2 = extractfield(headerNS3_nsp2.ElectrodesInfo,'Label')';
+channelNames_nsp2 = regexprep(string(channelNames_nsp2), '\W', '');
 
 %% get channel types
-channelType_nsp1_SEEG = regexp(nsp1_channelNames, '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');
-channelType_nsp1_EEG = regexp(nsp1_channelNames, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
-channelType_nsp1_EOC = regexp(nsp1_channelNames, '^(L|R)OC$');
-channelType_nsp1_EMG = regexp(nsp1_channelNames, '^EMG');
-channelType_nsp1_ECG = regexp(nsp1_channelNames, '(^EKG|Pulse)');
-channelType_nsp1_MISC = regexp(nsp1_channelNames, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)');
-channelType_nsp1_TRIG = regexp(nsp1_channelNames, 'trigger','ignorecase');
+channelType_nsp1_SEEG = regexp(channelNames_nsp1, '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');
+channelType_nsp1_EEG = regexp(channelNames_nsp1, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
+channelType_nsp1_EOC = regexp(channelNames_nsp1, '^(L|R)OC$');
+channelType_nsp1_EMG = regexp(channelNames_nsp1, '^EMG');
+channelType_nsp1_ECG = regexp(channelNames_nsp1, '(^EKG|Pulse)');
+channelType_nsp1_MISC = regexp(channelNames_nsp1, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)');
+channelType_nsp1_TRIG = regexp(channelNames_nsp1, 'trigger','ignorecase');
 
-channelType_nsp1_all = cell(size(nsp1_channelNames));
-for i = 1:size(nsp1_channelNames)
+channelType_nsp1_all = cell(size(channelNames_nsp1));
+for i = 1:size(channelNames_nsp1)
     if ~isempty(channelType_nsp1_TRIG{i})
         channelType_nsp1_all{i} = 'TRIG';
     elseif ~isempty(channelType_nsp1_EEG{i})
@@ -68,17 +63,16 @@ for i = 1:size(nsp1_channelNames)
     end
 end
     
+channelType_nsp2_SEEG = regexp(channelNames_nsp2, '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');
+channelType_nsp2_EEG = regexp(channelNames_nsp2, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
+channelType_nsp2_EOC = regexp(channelNames_nsp2, '^(L|R)OC$');
+channelType_nsp2_EMG = regexp(channelNames_nsp2, '^EMG');
+channelType_nsp2_ECG = regexp(channelNames_nsp2, '(^EKG|Pulse)');
+channelType_nsp2_MISC = regexp(channelNames_nsp2, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)');
+channelType_nsp2_TRIG = regexp(channelNames_nsp2, 'trigger','ignorecase');
 
-channelType_nsp2_SEEG = regexp(nsp2_channelNames, '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');
-channelType_nsp2_EEG = regexp(nsp2_channelNames, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
-channelType_nsp2_EOC = regexp(nsp2_channelNames, '^(L|R)OC$');
-channelType_nsp2_EMG = regexp(nsp2_channelNames, '^EMG');
-channelType_nsp2_ECG = regexp(nsp2_channelNames, '(^EKG|Pulse)');
-channelType_nsp2_MISC = regexp(nsp2_channelNames, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)');
-channelType_nsp2_TRIG = regexp(nsp2_channelNames, 'trigger','ignorecase');
-
-channelType_nsp2_all = cell(size(nsp2_channelNames));
-for i = 1:size(nsp2_channelNames)
+channelType_nsp2_all = cell(size(channelNames_nsp2));
+for i = 1:size(channelNames_nsp2)
     if ~isempty(channelType_nsp2_TRIG{i})
         channelType_nsp2_all{i} = 'TRIG';
     elseif ~isempty(channelType_nsp2_EEG{i})
@@ -98,56 +92,143 @@ for i = 1:size(nsp2_channelNames)
     end
 end
 
-%% get channel groups
-channelGroup_nsp1_all = cell(size(nsp1_channelNames));
-for i = 1:size(nsp1_channelNames,1)
-    if ~isempty(channelType_nsp1_SEEG{i})
-      channelGroup_nsp1_all{i} = regexp(nsp1_channelNames{i}, '^(L|R)[a-zA-Z]{2,3}','match');
-    else
-      channelGroup_nsp1_all{i} = nsp1_channelNames{i};
-    end
-end
-
-channelGroup_nsp2_all = cell(size(nsp2_channelNames));
-for i = 1:size(nsp2_channelNames,1)
-    if ~isempty(channelType_nsp2_SEEG{i})
-      channelGroup_nsp2_all{i} = regexp(nsp2_channelNames{i}, '^(L|R)[a-zA-Z]{2,3}','match');
-    else
-      channelGroup_nsp2_all{i} = nsp2_channelNames{i};
-    end
-end
-
 %% get current unit label
-nsp1_units = extractfield(header_nsp1_ns3.ElectrodesInfo,'AnalogUnits')';
-nsp1_units_temp = regexprep(string(nsp1_units), '\W', '');
-nsp2_units = extractfield(header_nsp2_ns3.ElectrodesInfo,'AnalogUnits')';
-nsp2_units_temp = regexprep(string(nsp2_units), '\W', '');
+units_nsp1 = extractfield(headerNS3_nsp1.ElectrodesInfo,'AnalogUnits')';
+units_nsp1 = regexprep(string(units_nsp1), '\W', '');
+units_nsp2 = extractfield(headerNS3_nsp2.ElectrodesInfo,'AnalogUnits')';
+units_nsp2 = regexprep(string(units_nsp2), '\W', '');
 
 %% get frequency cutoffs
-nsp1_lowCutoff = extractfield(header_nsp1_ns3.ElectrodesInfo,'LowFreqCorner')'/1000; % saved in mHz so /1000
-nsp1_highCutoff = extractfield(header_nsp1_ns3.ElectrodesInfo,'HighFreqCorner')'/1000;
-nsp2_lowCutoff = extractfield(header_nsp2_ns3.ElectrodesInfo,'LowFreqCorner')'/1000;
-nsp2_highCutoff = extractfield(header_nsp2_ns3.ElectrodesInfo,'HighFreqCorner')'/1000;
+lowCutoff_nsp1 = extractfield(headerNS3_nsp1.ElectrodesInfo,'LowFreqCorner')'/1000; % saved in mHz so /1000
+highCutoff_nsp1 = extractfield(headerNS3_nsp1.ElectrodesInfo,'HighFreqCorner')'/1000;
+lowCutoff_nsp2 = extractfield(headerNS3_nsp2.ElectrodesInfo,'LowFreqCorner')'/1000;
+highCutoff_nsp2 = extractfield(headerNS3_nsp2.ElectrodesInfo,'HighFreqCorner')'/1000;
+
+
+%% RECOMMENDED
+%% reference (check if this value is fixed?)
+reference_nsp1 = cell(size(channelNames_nsp1));
+reference_nsp1(:) = {'mastoid'};
+reference_nsp2 = cell(size(channelNames_nsp2));
+reference_nsp2(:) = {'mastoid'};
+
+%% get channel groups
+channelGroup_nsp1_all = cell(size(channelNames_nsp1));
+for i = 1:size(channelNames_nsp1,1)
+    if ~isempty(channelType_nsp1_SEEG{i})
+      channelGroup_nsp1_all{i} = regexp(channelNames_nsp1{i}, '^(L|R)[a-zA-Z]{2,3}','match');
+    else
+      channelGroup_nsp1_all{i} = channelNames_nsp1{i};
+    end
+end
+
+channelGroup_nsp2_all = cell(size(channelNames_nsp2));
+for i = 1:size(channelNames_nsp2,1)
+    if ~isempty(channelType_nsp2_SEEG{i})
+      channelGroup_nsp2_all{i} = regexp(channelNames_nsp2{i}, '^(L|R)[a-zA-Z]{2,3}','match');
+    else
+      channelGroup_nsp2_all{i} = channelNames_nsp2{i};
+    end
+end
+
+
+%% OPTIONAL
+%% getting sampling frequency
+samplingFrequency_nsp1 = cell(size(channelNames_nsp1));
+samplingFrequency_nsp1(:) = {headerNS3_nsp1.MetaTags.SamplingFreq};
+samplingFrequency_nsp2 = cell(size(channelNames_nsp2));
+samplingFrequency_nsp2(:) = {headerNS3_nsp2.MetaTags.SamplingFreq};
 
 %% description (nsx is refernetial)
-nsp1_description = cell(size(nsp1_channelNames));
-nsp1_description(:) = {'referential/unipolar'};
-nsp2_description = cell(size(nsp2_channelNames));
-nsp2_description(:) = {'referential/unipolar'};
+description_nsp1 = cell(size(channelNames_nsp1));
+description_nsp1(:) = {'referential/unipolar'};
+description_nsp2 = cell(size(channelNames_nsp2));
+description_nsp2(:) = {'referential/unipolar'};
+
+%% notch (check if this value is fixed?)
+notch_nsp1 = cell(size(channelNames_nsp1));
+notch_nsp1(:) = {'n/a'};
+notch_nsp2 = cell(size(channelNames_nsp2));
+notch_nsp2(:) = {'n/a'};
+
+%% channel status (only for SEEG or ECOG)
+status_nsp1 = cell(size(channelNames_nsp1));
+if ~isempty(badChannels_nsp1)
+    badChannels_nsp1 = load(badChannels_nsp1);
+    badChannels_nsp1 = badChannels_nsp1.badChannels;
+    
+    for i = 1:size(channelNames_nsp1,1)
+        if strcmp(channelType_nsp1_all{i},'SEEG') || strcmp(channelType_nsp1_all{i},'ECOG')
+            if ismember(i,badChannels_nsp1) % channel with respect to nps1 (1:128)
+                status_nsp1{i} = 'bad';
+            else
+                status_nsp1{i} = 'good';
+            end
+        else
+            status_nsp1{i} = 'n/a';
+        end
+    end
+else
+    status_nsp1(:) = {'n/a'};
+end
+
+status_nsp2 = cell(size(channelNames_nsp2));
+if ~isempty(badChannels_nsp2)
+    badChannels_nsp2 = load(badChannels_nsp2);
+    badChannels_nsp2 = badChannels_nsp2.badChannels;
+    
+    for i = 1:size(channelNames_nsp2,1)
+        if strcmp(channelType_nsp2_all{i},'SEEG') || strcmp(channelType_nsp2_all{i},'ECOG')
+            if ismember(i,badChannels_nsp2) % channel number with respect to nsp2 (1:128)
+                status_nsp2{i} = 'bad';
+            else
+                status_nsp2{i} = 'good';
+            end
+        else
+            status_nsp2{i} = 'n/a';
+        end
+    end
+else
+    status_nsp2(:) = {'n/a'};
+end
+
+ %% status description (check if this value is fixed?)
+statusDescription_nsp1 = cell(size(channelNames_nsp1));
+statusDescription_nsp1(:) = {'n/a'};
+statusDescription_nsp2 = cell(size(channelNames_nsp2));
+statusDescription_nsp2(:) = {'n/a'};
 
 
-
-
-%%  varargout = openNEV(varargin) % try opening nev file to get required vals missing from this tsv file (low/high cutoff frequencies)
- % and optional vals that angelique includes (reference, refernce, notch,
- % status, status description)
-
-
-
-
-
- 
  %% save tsv files
+varNames = {'name','type','units','low_cutoff','high_cutoff','reference','group','sampling_frequency',...
+    'description','notch','status','status_description'};
 
+table_channelsTSV_nsp1 = table(channelNames_nsp1, channelType_nsp1_all, units_nsp1, lowCutoff_nsp1, highCutoff_nsp1, ...
+    reference_nsp1, channelGroup_nsp1_all, samplingFrequency_nsp1, description_nsp1, notch_nsp1, ...
+    status_nsp1, statusDescription_nsp1, 'VariableNames', varNames);
+
+table_channelsTSV_nsp2 = table(channelNames_nsp2, channelType_nsp2_all, units_nsp2, lowCutoff_nsp2, highCutoff_nsp2, ...
+    reference_nsp2, channelGroup_nsp2_all, samplingFrequency_nsp2, description_nsp2, notch_nsp2, ...
+    status_nsp2, statusDescription_nsp2, 'VariableNames', varNames);
+
+writetable(table_channelsTSV_nsp1, filename_channelsTSV_nsp1, 'FileType', 'text', 'Delimiter', '\t');
+writetable(table_channelsTSV_nsp2, filename_channelsTSV_nsp2, 'FileType', 'text', 'Delimiter', '\t');
+
+
+%% saving hdr info for ieeg script
+% nsp1    
+hdrNS3_nsp1.hdr.Fs = samplingFrequency_nsp1;    % sampling frequency
+hdrNS3_nsp1.hdr.nChans = headerNS3_nsp1.MetaTags.ChannelCount; % J: number of channels
+hdrNS3_nsp1.hdr.label = channelNames_nsp1; % J: use regular channel name (RAMY1) and ask about that later
+hdrNS3_nsp1.hdr.nSamples = headerNS3_nsp1.MetaTags.DataPoints;    % number of samples
+hdrNS3_nsp1.hdr.chantype = channelType_nsp1_all; % same channl types as found before
+hdrNS3_nsp1.hdr.chanunit = cellstr(units_nsp1); % J: units
+% nsp2
+hdrNS3_nsp2.hdr.Fs = samplingFrequency_nsp2;    % sampling frequency
+hdrNS3_nsp2.hdr.nChans = headerNS3_nsp2.MetaTags.ChannelCount; % J: number of channels
+hdrNS3_nsp2.hdr.label = channelNames_nsp2; % J: use regular channel name (RAMY1) and ask about that later
+hdrNS3_nsp2.hdr.nSamples = headerNS3_nsp2.MetaTags.DataPoints;    % number of samples
+hdrNS3_nsp2.hdr.chantype = channelType_nsp2_all; % same channl types as found before
+hdrNS3_nsp2.hdr.chanunit = cellstr(units_nsp2); % J: units
 
 end

@@ -12,7 +12,7 @@ function perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
 %% create tsv file name (sub-XXXX_ses-postimp_electrodes.tsv)
-filename_electrodesTsv = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_electrodes.tsv'];
+filename_electrodesTSV = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_electrodes.tsv'];
 
 %% create tsv values
 electrodeInfo_RAS = readtable(filename_RAS);
@@ -32,8 +32,8 @@ type = repmat({'n/a'},size(electrodeInfo_RAS,1),1); % Optional type of the elect
 impedance = repmat({'n/a'},size(electrodeInfo_RAS,1),1); % Impedance of the electrode in kOhm.
 
 %% saving as .tsv
-tsv_values = table(name, x, y, z, size, material, manufacturer, group, hemisphere, type, impedance);
-writetable(tsv_values, filename_electrodesTsv, 'FileType', 'text', 'Delimiter', '\t');
+table_electrodesTSV = table(name, x, y, z, size, material, manufacturer, group, hemisphere, type, impedance);
+writetable(table_electrodesTSV, filename_electrodesTSV, 'FileType', 'text', 'Delimiter', '\t');
 
 
 end
