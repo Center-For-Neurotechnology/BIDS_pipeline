@@ -1,55 +1,62 @@
-%% set up BIDS directories
-directoryBIDS = 'E:\BIDStesting\BIDS_data'; % directoryBIDS/sub_XXXX/ses-postimp/ieeg
+%% set up BIDS directory
+% files will be saved in: directoryBIDS/sub_XXXX/
+directoryBIDS = 'E:\BIDStesting\BIDS_data'; 
 sub_XXXX = 'sub-7u9e'; % the deidentified patient ID
 
 
-%% images PLACEHOLDER
-% % figure out whether scans will already be de-IDed. could actually probably start by assuming the de-IDed scans already exist, then create a new function to do that if they don't actually already exist
-% % filename_MRI = perParticipantImageNII(sub_XXXX, filename_MRI, directoryBIDS) 
+%% images (PLACEHOLDER, waiting for new MRI pipeline)
+% filename_MRI = perParticipantImageNII(sub_XXXX, filename_MRI, directoryBIDS) 
 
 
-%% tsv,csv,json files
-%% _coordsystem,json
-% create directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_coordsystem.json
-% post MRI file name: directoryBIDS/sub_XXXX/ses-postimp/anat/sub-XXXX_ses-postimp_acq-CT_run-01_T1w.nii
-filename_MRI = 'sub-XXXX_ses-postimp_acq-CT_run-01_T1w.nii'; % will not be used to open a file, just as a value in the json file (should prob get this from previous function)
+%% per participant files
+%% _coordsystem.json
+% create a json file with a coordinate system in which electrode positions are expressed
+% saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_coordsystem.json
+% post MRI file should already be in the BIDS directory: directoryBIDS/sub_XXXX/ses-postimp/anat/sub-XXXX_ses-postimp_acq-CT_run-01_T1w.nii
+filename_MRI = 'sub-XXXX_ses-postimp_acq-CT_run-01_T1w.nii'; % will not be used to open a file, just as a string in the json file
 perParticipantCoordsystemJSON(sub_XXXX, filename_MRI, directoryBIDS)
 
-
 %% _T1w.json
-% create directoryBIDS/sub_XXXX/ses-preimp/anat/sub-XXXX_ses-preimp_acq-CT_run-01_T1w.json 
-% and directoryBIDS/sub_XXXX/ses-postimp/anat/sub-XXXX_ses-postimp_acq-T1w_run-01_T1w.json 
+% create a json file with information about the pre and post implant scans,
+%       currently set to 'n/a' for our data 
+% saved as: directoryBIDS/sub_XXXX/ses-preimp/anat/sub-XXXX_ses-preimp_acq-CT_run-01_T1w.json 
+%       and directoryBIDS/sub_XXXX/ses-postimp/anat/sub-XXXX_ses-postimp_acq-T1w_run-01_T1w.json 
 preImplantScan = 'CT';
-postImplantScan = 'MRI';
+postImplantScan = 'MRI'; % 'MRI' will be changed to 'T1w' in the file name
 perParticipantImageJSON(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS)
 
-
 %% _electrodes.tsv
-% create directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'Z:\Original Data\MG\MG151revised\MG151revised_Notes_and_Images\MG151revised_ElectrodeInfo_RAS.xlsx';
+% create a file that gives the location, size and other properties of iEEG electrodes
+% saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
+filename_RAS = 'Z:\Original Data\MG\MGxxx\MGxxx_Notes_and_Images\MGxxx_ElectrodeInfo_RAS.xlsx';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
+
+
+%% per session files
 %% _channels.tsv
-% create directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
+% create a tsv file containing additional descriptions of the channels
+% saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
 taskName = 'NetworkWake1';
 ieeg_run = '01';
 badChannels_nsp1 = ''; % assuming empty for now, can write a script to make this mat file later
 badChannels_nsp2 = '';
-filenameNSx_nsp1 = 'Z:\Original Data\MG\MG151revised\MG151revised_Tasks\STIMULATION\NetworkWake1\NSP1\10-193513-001.ns3';
-filenameNSx_nsp2 = 'Z:\Original Data\MG\MG151revised\MG151revised_Tasks\STIMULATION\NetworkWake1\NSP2\10-193514-001.ns3';
-[hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNSx_nsp1,filenameNSx_nsp2,badChannels_nsp1,badChannels_nsp2);
-
+filenameNS3_nsp1 = 'Z:\Original Data\MG\MGxxx\MGxxx_Tasks\STIMULATION\NetworkWake1\NSP1\10-193513-001.ns3';
+filenameNS3_nsp2 = 'Z:\Original Data\MG\MGxxx\MGxxx_Tasks\STIMULATION\NetworkWake1\NSP2\10-193514-001.ns3'; % currently written for 2 NSPs
+[hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2);
 
 %% _ieeg (edf, brainvision)
-% create postimp / ... _ieeg.eeg, _ieeg.edf, _ieeg.vmrk, _ieeg.vhdr 
-% directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_ieeg.eeg
-perSessionIEEG(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNSx_nsp1,filenameNSx_nsp2, hdrNS3_nsp1, hdrNS3_nsp2)
+% create edf and brainvision files containg raw iEEG data
+% saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_ieeg.eeg
+% with extentions _ieeg.eeg, _ieeg.edf, _ieeg.vmrk, _ieeg.vhdr 
+perSessionIEEG(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2, hdrNS3_nsp1, hdrNS3_nsp2)
 
-
+%% currently reviewing in perSessionEventsTSV() 7/7
 %% _events.tsv
-% create sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv
-stimParameters.stimPulseDuration = 0.233; % manual input for now, can be integrated with new cerelab updates
+% create a tsv file containing electrical stimulation events and parameters 
+% saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv
+stimParameters.stimPulseDuration = 0.233; % in mS
 stimParameters.stimFrequency = 0; % in Hz
 stimParameters.stimCurrent = 7; % in mA;
 stimParameters.stim_type = {'Bipolar','biphasic'};
@@ -60,10 +67,9 @@ channInfo.bankInfo.bankC = 97:128;
 channInfo.bankInfo.bankANSP = 1;% Which NSP (1 or 2) correspond to each bank 
 channInfo.bankInfo.bankBNSP = 1;
 channInfo.bankInfo.bankCNSP = 1;
-fileNameStimSites = 'Z:\Original Data\MG\MG151revised\MG151revised_Tasks\STIMULATION\NetworkWake1\NetworkSweepChans-10_19-48-15.mat';
-perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNSx_nsp1,filenameNSx_nsp2,stimParameters,...
+fileNameStimSites = 'Z:\Original Data\MG\MGxxx\MGxxx_Tasks\STIMULATION\NetworkWake1\NetworkSweepChans-10_19-48-15.mat';
+perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,stimParameters,...
     channInfo,fileNameStimSites,hdrNS3_nsp1,hdrNS3_nsp2)
-
 
 %% _events.json
 % create sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.json

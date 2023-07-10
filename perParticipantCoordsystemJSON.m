@@ -1,6 +1,6 @@
 function perParticipantCoordsystemJSON(sub_XXXX, filename_MRI, directoryBIDS)
 % this function is run once for each patient. It creates a json file
-% containing a description of the coordinate system. The json file will be
+% containing a description of the electrode coordinate system. The json file will be
 % saved in directoryBIDS/sub_XXXX/ses-postimp/ieeg and have the name
 % sub-XXXX_ses-postimp_coordsystem.json
 % INPUTS:
