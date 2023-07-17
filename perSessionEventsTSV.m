@@ -79,28 +79,42 @@ for i = 1:size(stimLogChannelsNSP,1)
     if stimLogChannelsNSP(i,1) <= 128 % have the stim channel numbers, sorting into nsp1 or nsp2 file
         stim_ch1 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,1));
         currNSP = 1;
-        NSP1_counter = NSP1_counter+1;
+%         NSP1_counter = NSP1_counter+1;
     else
         stim_ch1 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,1)-128);
         currNSP = 2;
-        NSP2_counter = NSP2_counter+1;
+%         NSP2_counter = NSP2_counter+1;
     end
     if stimLogChannelsNSP(i,2) <= 128
         stim_ch2 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,2)); % stim channels can be in different nsps
     else
         stim_ch2 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,2)-128);
     end
-    if currNSP == 1
+    NSP1_counter = NSP1_counter+1;
+     NSP2_counter = NSP2_counter+1;
         stimBipolarSites_nsp1{NSP1_counter,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
         stimBipolarSites_nsp1{NSP1_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp1{NSP1_counter,3} = 1;
         stimBipolarSites_nsp1{NSP1_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
-        stimBipolarSites_nsp1{NSP1_counter,5} = 1;
-    elseif currNSP == 2
         stimBipolarSites_nsp2{NSP2_counter,1} = join([stim_ch1 stim_ch2],'-');
         stimBipolarSites_nsp2{NSP2_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp2{NSP2_counter,3} = 2;
         stimBipolarSites_nsp2{NSP2_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
+
+
+    if currNSP == 1
+%         stimBipolarSites_nsp1{NSP1_counter,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
+%         stimBipolarSites_nsp1{NSP1_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
+        stimBipolarSites_nsp1{NSP1_counter,3} = 1;
+        stimBipolarSites_nsp2{NSP1_counter,3} = 1;
+%         stimBipolarSites_nsp1{NSP1_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
+        stimBipolarSites_nsp1{NSP1_counter,5} = 1;
+        stimBipolarSites_nsp2{NSP2_counter,5} = 1;
+    elseif currNSP == 2
+%         stimBipolarSites_nsp2{NSP2_counter,1} = join([stim_ch1 stim_ch2],'-');
+%         stimBipolarSites_nsp2{NSP2_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
+        stimBipolarSites_nsp1{NSP1_counter,3} = 2;
+        stimBipolarSites_nsp2{NSP2_counter,3} = 2;
+%         stimBipolarSites_nsp2{NSP2_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
+        stimBipolarSites_nsp2{NSP2_counter,5} = 2;
         stimBipolarSites_nsp2{NSP2_counter,5} = 2;
     end
 
@@ -155,7 +169,7 @@ stimAINPChNames = {'SYNC'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim 
 channInfo = findChannelNamesInNSX(channInfo, [], fileNameNSxPerNSP); 
 titName = 'bids';
 % returns the index for stim at each nsp
-[~,~,~,indTimeSTIMPerFile] = findChannelNamesInNSxBIDS(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
+[~,~,~,indTimeSTIMPerFile] = scriptCheckBIDSStimInNSX(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
 
 %% Sort stim event times into nsp1 or nsp2 file
 % moving through the stim ch log, determine which nsp each stim event was 
@@ -168,13 +182,13 @@ stim1_counter = 1;
 stim2_counter = 1;
 
 for i = 1:size(stimLogNSPs,1)
-    if stimLogNSPs(i,1) == 1
+%     if stimLogNSPs(i,1) == 1
         stimTime_nsp1(stim1_counter,1) = indTimeSTIMPerFile{1,1}(i);
         stim1_counter = stim1_counter+1;
-    elseif stimLogNSPs(i,1) == 2
+%     elseif stimLogNSPs(i,1) == 2
         stimTime_nsp2(stim2_counter,1) = indTimeSTIMPerFile{1,2}(i);
         stim2_counter = stim2_counter+1;
-    end
+%     end
     
 end
 
