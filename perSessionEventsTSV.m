@@ -69,7 +69,6 @@ for i = 1:size(stimLogChannels,1)
     end
 end
 
-%% ************************ reviewed up to here 7/7 
 %%
 % getting the stim site channels
 stimBipolarSites_nsp1 = {}; % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP}
@@ -93,15 +92,15 @@ for i = 1:size(stimLogChannelsNSP,1)
     end
     if currNSP == 1
         stimBipolarSites_nsp1{NSP1_counter,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
-        stimBipolarSites_nsp1{NSP1_counter,2} = stim_ch1;
+        stimBipolarSites_nsp1{NSP1_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
         stimBipolarSites_nsp1{NSP1_counter,3} = 1;
-        stimBipolarSites_nsp1{NSP1_counter,4} = stim_ch2;
+        stimBipolarSites_nsp1{NSP1_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
         stimBipolarSites_nsp1{NSP1_counter,5} = 1;
     elseif currNSP == 2
         stimBipolarSites_nsp2{NSP2_counter,1} = join([stim_ch1 stim_ch2],'-');
-        stimBipolarSites_nsp2{NSP2_counter,2} = stim_ch1;
+        stimBipolarSites_nsp2{NSP2_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
         stimBipolarSites_nsp2{NSP2_counter,3} = 2;
-        stimBipolarSites_nsp2{NSP2_counter,4} = stim_ch2;
+        stimBipolarSites_nsp2{NSP2_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
         stimBipolarSites_nsp2{NSP2_counter,5} = 2;
     end
 
@@ -156,7 +155,7 @@ stimAINPChNames = {'SYNC'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim 
 channInfo = findChannelNamesInNSX(channInfo, [], fileNameNSxPerNSP); 
 titName = 'bids';
 % returns the index for stim at each nsp
-[~,~,~,indTimeSTIMPerFile] = scriptCheckBIDSStimInNSX(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
+[~,~,~,indTimeSTIMPerFile] = findChannelNamesInNSxBIDS(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
 
 %% Sort stim event times into nsp1 or nsp2 file
 % moving through the stim ch log, determine which nsp each stim event was 
