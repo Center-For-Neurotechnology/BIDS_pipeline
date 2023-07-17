@@ -37,107 +37,61 @@ HED = 'n/a';
 % setting up cerestim bank info
 cerestimAllBanks = [channInfo.bankInfo.bankANSP; channInfo.bankInfo.bankBNSP; channInfo.bankInfo.bankCNSP];
 stimLogChannels = load(fileNameStimSites);
-stimLogChannels = stimLogChannels.stimchans(:,1:2);
+stimLogChannels = stimLogChannels.stimchans(:,1:2); % works for single site (2 channels) stim
 stimLogNSPs = [];
 stimLogChannelsNSP = [];
 
 % accounting for cerestim and nsp channel offsets and nsp2 = nsp1 + 128
 for i = 1:size(stimLogChannels,1)
     for j = 1:size(stimLogChannels,2)
-        if stimLogChannels(i,j) <= 32 % cerestim channels 1:32 are in NSP connected to Bank 1 
+        if stimLogChannels(i,j) <= channInfo.bankInfo.bankA(end) % smallest 32 cerestim channels are connected to Bank 1 
             stimLogNSPs(i,j) = cerestimAllBanks(1);
-            if cerestimAllBanks(1) == 1 % if NSP1, channel number is as is
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j);
-            else
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128; % if NSP2, channel number needs +128
-            end
-        elseif stimLogChannels(i,j) <= 65 % cerestim channels 33:65 are in NSP connected to Bank 2 
+            stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128*(cerestimAllBanks(1)==2) + channInfo.bankInfo.bankA(1)-1; % if NSP2, channel number needs +128
+        elseif stimLogChannels(i,j) <= channInfo.bankInfo.bankB(end) % next 32 smallest cerestim channels are connected to Bank 2 
             stimLogNSPs(i,j) = cerestimAllBanks(2);
-            if cerestimAllBanks(2) == 1
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j);
-            else
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128;
-            end
+            stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128*(cerestimAllBanks(2)==2) + channInfo.bankInfo.bankB(1)-1-32;
         else 
-            stimLogNSPs(i,j) = cerestimAllBanks(3); % cerestim channels 65:96 are in NSP connected to Bank 3 
-            if cerestimAllBanks(3) == 1
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j);
-            else
-                stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128;
-            end
+            stimLogNSPs(i,j) = cerestimAllBanks(3); % last 32 cerestim channels are connected to Bank 3 
+            stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128*(cerestimAllBanks(3)==2) + channInfo.bankInfo.bankC(1)-1-64;
         end 
     end
 end
 
 %%
 % getting the stim site channels
-stimBipolarSites_nsp1 = {}; % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP}
-stimBipolarSites_nsp2 = {};
-NSP1_counter = 0;
-NSP2_counter = 0;
+stimBipolarSites = {}; % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP}
 for i = 1:size(stimLogChannelsNSP,1)
     if stimLogChannelsNSP(i,1) <= 128 % have the stim channel numbers, sorting into nsp1 or nsp2 file
         stim_ch1 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,1));
-        currNSP = 1;
-%         NSP1_counter = NSP1_counter+1;
+        stimBipolarSites{i,3} = 1;
     else
         stim_ch1 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,1)-128);
-        currNSP = 2;
-%         NSP2_counter = NSP2_counter+1;
+        stimBipolarSites{i,3} = 2;
     end
     if stimLogChannelsNSP(i,2) <= 128
         stim_ch2 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,2)); % stim channels can be in different nsps
+        stimBipolarSites{i,5} = 1;
     else
         stim_ch2 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,2)-128);
+        stimBipolarSites{i,5} = 2;
     end
-    NSP1_counter = NSP1_counter+1;
-     NSP2_counter = NSP2_counter+1;
-        stimBipolarSites_nsp1{NSP1_counter,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
-        stimBipolarSites_nsp1{NSP1_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp1{NSP1_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
-        stimBipolarSites_nsp2{NSP2_counter,1} = join([stim_ch1 stim_ch2],'-');
-        stimBipolarSites_nsp2{NSP2_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp2{NSP2_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
-
-
-    if currNSP == 1
-%         stimBipolarSites_nsp1{NSP1_counter,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
-%         stimBipolarSites_nsp1{NSP1_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp1{NSP1_counter,3} = 1;
-        stimBipolarSites_nsp2{NSP1_counter,3} = 1;
-%         stimBipolarSites_nsp1{NSP1_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
-        stimBipolarSites_nsp1{NSP1_counter,5} = 1;
-        stimBipolarSites_nsp2{NSP2_counter,5} = 1;
-    elseif currNSP == 2
-%         stimBipolarSites_nsp2{NSP2_counter,1} = join([stim_ch1 stim_ch2],'-');
-%         stimBipolarSites_nsp2{NSP2_counter,2} = stimLogChannelsNSP(i,1); % stim_ch1;
-        stimBipolarSites_nsp1{NSP1_counter,3} = 2;
-        stimBipolarSites_nsp2{NSP2_counter,3} = 2;
-%         stimBipolarSites_nsp2{NSP2_counter,4} = stimLogChannelsNSP(i,2); % stim_ch2;
-        stimBipolarSites_nsp2{NSP2_counter,5} = 2;
-        stimBipolarSites_nsp2{NSP2_counter,5} = 2;
-    end
-
+    stimBipolarSites{i,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
+    stimBipolarSites{i,2} = stimLogChannelsNSP(i,1); % stim_ch1;
+    stimBipolarSites{i,4} = stimLogChannelsNSP(i,2); % stim_ch2;
 end
 
 % creating 'electrical_stimulation_trial_type' from existing variables
 % 'Bipolar Single Pulse stim, channels: LTB_10-LTB_11, current: 7 mA, stimulation duration: 0.233 ms, frequency: 0 Hz'
-stimTrialType_nsp1 = {};
-stimTrialType_nsp2 = {};
+stimTrialType = {};
 part1 = join([stimParameters.stim_type{1},"Single Pulse stim"],' ');
 part3 = join(["current:", string(stimParameters.stimCurrent), 'mA'],' ');
 part4 = join(["stimulation duration:", string(stimParameters.stimPulseDuration), 'ms'],' ');
 part5 = join(["frequency:", string(stimParameters.stimFrequency), 'Hz'],' ');
 
-for i = 1:size(stimBipolarSites_nsp1,1) % both onset_sec and stimBipolarSites should be the same length/size
-    part2 = join(["channels:", stimBipolarSites_nsp1{i}],' ');
-    stimTrialType_nsp1{i,1} = join([part1,part2,part3,part4,part5],', ');    
+for i = 1:size(stimBipolarSites,1) % both onset_sec and stimBipolarSites should be the same length/size
+    part2 = join(["channels:", stimBipolarSites{i}],' ');
+    stimTrialType{i,1} = join([part1,part2,part3,part4,part5],', ');    
 end
-for i = 1:size(stimBipolarSites_nsp2,1)
-    part2 = join(["channels:", stimBipolarSites_nsp2{i}],' ');
-    stimTrialType_nsp2{i,1} = join([part1,part2,part3,part4,part5],', ');    
-end
-
 
 
 %% get stim times
@@ -156,81 +110,50 @@ channInfo.chNamesToExcludeInput = {};
 timeInfo.startNSxSec= 0; 
 timeInfo.endNSxSec = []; 
 
-%Results ********************************* TO DO: NEED TO GET RID OF dirResults
-%(just create new scriptCheckSyncStimInNSX.m function specifically for
-%BIDS?
 dirResults = '';
-% % if ~exist(dirResults,'dir'), mkdir(dirResults); end
-
 %AINP STIM Channel
 stimAINPChNames = {'SYNC'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
  
 % Find channel names
 channInfo = findChannelNamesInNSX(channInfo, [], fileNameNSxPerNSP); 
 titName = 'bids';
+
 % returns the index for stim at each nsp
 [~,~,~,indTimeSTIMPerFile] = scriptCheckBIDSStimInNSX(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
 
 %% Sort stim event times into nsp1 or nsp2 file
-% moving through the stim ch log, determine which nsp each stim event was 
-% at and add that time to either of the new nsp stim time arrays
-
 % new stim arrays
 stimTime_nsp1 = [];
 stimTime_nsp2 = [];
-stim1_counter = 1;
-stim2_counter = 1;
 
+% adding stim index to per nsp arrays
 for i = 1:size(stimLogNSPs,1)
-%     if stimLogNSPs(i,1) == 1
-        stimTime_nsp1(stim1_counter,1) = indTimeSTIMPerFile{1,1}(i);
-        stim1_counter = stim1_counter+1;
-%     elseif stimLogNSPs(i,1) == 2
-        stimTime_nsp2(stim2_counter,1) = indTimeSTIMPerFile{1,2}(i);
-        stim2_counter = stim2_counter+1;
-%     end
-    
+    stimTime_nsp1(i,1) = indTimeSTIMPerFile{1,1}(i);
+    stimTime_nsp2(i,1) = indTimeSTIMPerFile{1,2}(i);    
 end
 
 stimTime_nsp1 = stimTime_nsp1/hdrNS3_nsp1.hdr.Fs{1}; % converting time from index number to seconds (sec = index/sampling rate)
 stimTime_nsp2 = stimTime_nsp2/hdrNS3_nsp2.hdr.Fs{1};
 
 %% set up table vars    
-% nsp1
 % creating cells for table()
-stimPulseDuration_nsp1 = cell(size(stimTime_nsp1));
-responseTime_nsp1 = cell(size(stimTime_nsp1));
-stimFile_nsp1 = cell(size(stimTime_nsp1));
-hed_nsp1 = cell(size(stimTime_nsp1));
-stimFrequency_nsp1 = cell(size(stimTime_nsp1));
-stimCurrent_nsp1 = cell(size(stimTime_nsp1));
-stim_type_nsp1 = cell(size(stimTime_nsp1)); 
+stimPulseDuration = cell(size(stimLogNSPs,1),1);
+responseTime = cell(size(stimLogNSPs,1),1);
+stimFile = cell(size(stimLogNSPs,1),1);
+hed = cell(size(stimLogNSPs,1),1);
+stimFrequency = cell(size(stimLogNSPs,1),1);
+stimCurrent = cell(size(stimLogNSPs,1),1);
+stim_type = cell(size(stimLogNSPs,1),1); 
 
 % filling cells with existing variables
-stimPulseDuration_nsp1(:) = {stimParameters.stimPulseDuration};
-responseTime_nsp1(:) = {response_time};
-stimFile_nsp1(:) = {stim_file};
-hed_nsp1(:) = {HED};
-stimFrequency_nsp1(:) = {stimParameters.stimFrequency};
-stimCurrent_nsp1(:) = {stimParameters.stimCurrent};
-stim_type_nsp1(:) = {stimParameters.stim_type{2}}; 
+stimPulseDuration(:) = {stimParameters.stimPulseDuration};
+responseTime(:) = {response_time};
+stimFile(:) = {stim_file};
+hed(:) = {HED};
+stimFrequency(:) = {stimParameters.stimFrequency};
+stimCurrent(:) = {stimParameters.stimCurrent};
+stim_type(:) = {stimParameters.stim_type{2}}; 
 
-% nsp2
-stimPulseDuration_nsp2 = cell(size(stimTime_nsp2));
-responseTime_nsp2 = cell(size(stimTime_nsp2));
-stimFile_nsp2 = cell(size(stimTime_nsp2));
-hed_nsp2 = cell(size(stimTime_nsp2));
-stimFrequency_nsp2 = cell(size(stimTime_nsp2));
-stimCurrent_nsp2 = cell(size(stimTime_nsp2));
-stim_type_nsp2 = cell(size(stimTime_nsp2)); 
-
-stimPulseDuration_nsp2(:) = {stimParameters.stimPulseDuration};
-responseTime_nsp2(:) = {response_time};
-stimFile_nsp2(:) = {stim_file};
-hed_nsp2(:) = {HED};
-stimFrequency_nsp2(:) = {stimParameters.stimFrequency};
-stimCurrent_nsp2(:) = {stimParameters.stimCurrent};
-stim_type_nsp2(:) = {stimParameters.stim_type{2}}; 
 
 %% create tables and save tsv files
 varNames = {'onset','duration','electrical_stimulation_trial_type','response_time','stim_file','HED',...
@@ -240,20 +163,18 @@ varNames = {'onset','duration','electrical_stimulation_trial_type','response_tim
     'electrical_stimulation_Channel2Stim','electrical_stimulation_Channel2StimNSP'};
 
 if ~isempty(stimTime_nsp1) % avoid saving an empty file if there were no stim events in that nsp
-table_eventsTSV_nsp1 = table(stimTime_nsp1,stimPulseDuration_nsp1,stimTrialType_nsp1,responseTime_nsp1,stimFile_nsp1,hed_nsp1,...
-    stimTime_nsp1,stimTime_nsp1,stimFrequency_nsp1,stimCurrent_nsp1,stimBipolarSites_nsp1(:,1),stim_type_nsp1,...
-    stimBipolarSites_nsp1(:,2),stimBipolarSites_nsp1(:,3),stimBipolarSites_nsp1(:,4),stimBipolarSites_nsp1(:,5),...
-    'VariableNames', varNames); 
-
+    table_eventsTSV_nsp1 = table(stimTime_nsp1,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
+        stimTime_nsp1,stimTime_nsp1,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
+        stimBipolarSites(:,2),stimBipolarSites(:,3),stimBipolarSites(:,4),stimBipolarSites(:,5),...
+        'VariableNames', varNames); 
     writetable(table_eventsTSV_nsp1, filename_eventsTSV_nsp1, 'FileType', 'text', 'Delimiter', '\t');
 end
 
 if ~isempty(stimTime_nsp2)
-    table_eventsTSV_nsp2 = table(stimTime_nsp2,stimPulseDuration_nsp2,stimTrialType_nsp2,responseTime_nsp2,stimFile_nsp2,hed_nsp2,...
-    stimTime_nsp2,stimTime_nsp2,stimFrequency_nsp2,stimCurrent_nsp2,stimBipolarSites_nsp2(:,1),stim_type_nsp2,...
-    stimBipolarSites_nsp2(:,2),stimBipolarSites_nsp2(:,3),stimBipolarSites_nsp2(:,4),stimBipolarSites_nsp2(:,5),...
-    'VariableNames', varNames); 
-
+    table_eventsTSV_nsp2 = table(stimTime_nsp2,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
+        stimTime_nsp2,stimTime_nsp2,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
+        stimBipolarSites(:,2),stimBipolarSites(:,3),stimBipolarSites(:,4),stimBipolarSites(:,5),...
+        'VariableNames', varNames); 
     writetable(table_eventsTSV_nsp2, filename_eventsTSV_nsp2, 'FileType', 'text', 'Delimiter', '\t');
 end
 
