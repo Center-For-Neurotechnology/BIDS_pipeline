@@ -53,18 +53,18 @@ else
 end
 indSameStim = find(diff([0 indTimeSTIM])<=minSTIMDistance); % remove those that are too close (they correspond to the same stim pulse
 indTimeSTIM(indSameStim)=[];
-if ~isempty(indTimeSTIM) 
-    figure; hold on;
-    plot(dataBipolarPerCh{1})
-    plot(dataStim{1},'k','LineWidth',3)
-    plot(indTimeSTIM,zeros(1,length(indTimeSTIM)),'ms','LineWidth',20)
-    legend(strcat(chNamesBipolar{1},' (chNSX ',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',' / chCER',cellfun(@num2str,num2cell(selChNamesInCERESTIM(selBipolar1(:,1))),'UniformOutput',0)',')'))
-    try
-        %savefig(gcf,[dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP1'],'compact');
-    catch
-        disp(['Could not save fig file ',   [dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP1']]);
-    end
-end
+% if ~isempty(indTimeSTIM) 
+%     figure; hold on;
+%     plot(dataBipolarPerCh{1})
+%     plot(dataStim{1},'k','LineWidth',3)
+%     plot(indTimeSTIM,zeros(1,length(indTimeSTIM)),'ms','LineWidth',20)
+%     legend(strcat(chNamesBipolar{1},' (chNSX ',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',' / chCER',cellfun(@num2str,num2cell(selChNamesInCERESTIM(selBipolar1(:,1))),'UniformOutput',0)',')'))
+%     try
+%         %savefig(gcf,[dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP1'],'compact');
+%     catch
+%         disp(['Could not save fig file ',   [dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP1']]);
+%     end
+% end
 indTimeSTIMPerFile{1} = indTimeSTIM;
 
 %% Check alignment beween TXT files and NSX (when STIM actually ocurred!)
@@ -85,7 +85,7 @@ if nStimFromTXT > nStim %&& ~strncmpi(stimAINPChNames,allChNames{stimChNumber1},
 end
 
  %% NSP2
- if numel(fileNameNSxPerNSP)>1 && sum(channInfo.NSPnumber==2,'all')>0
+ if numel(fileNameNSxPerNSP)>1 %&& sum(channInfo.NSPnumber==2,'all')>0
      selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==2))-128; %selChNames1 = [159 160]-128;
      selChNames1 = selChNames1(selChNames1~=0);
      selChNames1 = selChNames1(:)';
@@ -101,19 +101,19 @@ end
      end
      indSameStim = find(diff([0 indTimeSTIM])<=minSTIMDistance); % remove those that are too close (they correspond to the same stim pulse
      indTimeSTIM(indSameStim)=[];
-     if ~isempty(indTimeSTIM) %Should be changed to ANY!
-         figure; hold on;
-         plot(dataBipolarPerCh{2})
-         plot(dataStim{1},'k','LineWidth',3)
-         plot(indTimeSTIM,zeros(1,length(indTimeSTIM)),'ms','LineWidth',20)
-         % legend(strcat(chNamesBipolar{2},' (ch',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',')'))
-         legend(strcat(chNamesBipolar{2},' (chNSX ',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',' / chCER',cellfun(@num2str,num2cell(selChNamesInCERESTIM(selBipolar1(:,1))),'UniformOutput',0)',')'))
-         try
-%              savefig(gcf,[dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP2'],'compact');
-         catch
-             disp(['Could not save fig file ',   [dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP2']]);
-         end
-     end
+%      if ~isempty(indTimeSTIM) %Should be changed to ANY!
+%          figure; hold on;
+%          plot(dataBipolarPerCh{2})
+%          plot(dataStim{1},'k','LineWidth',3)
+%          plot(indTimeSTIM,zeros(1,length(indTimeSTIM)),'ms','LineWidth',20)
+%          % legend(strcat(chNamesBipolar{2},' (ch',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',')'))
+%          legend(strcat(chNamesBipolar{2},' (chNSX ',cellfun(@num2str,num2cell(selChNames1(selBipolar1(:,1))),'UniformOutput',0)',' / chCER',cellfun(@num2str,num2cell(selChNamesInCERESTIM(selBipolar1(:,1))),'UniformOutput',0)',')'))
+%          try
+% %              savefig(gcf,[dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP2'],'compact');
+%          catch
+%              disp(['Could not save fig file ',   [dirImages, filesep,'stimChannels_', titName,'_' pName,'_NSP2']]);
+%          end
+%      end
      indTimeSTIMPerFile{2} = indTimeSTIM;
      
      
