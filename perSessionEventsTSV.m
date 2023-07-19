@@ -119,7 +119,7 @@ channInfo = findChannelNamesInNSX(channInfo, [], fileNameNSxPerNSP);
 titName = 'bids';
 
 % returns the index for stim at each nsp
-[~,~,~,indTimeSTIMPerFile] = scriptCheckBIDSStimInNSX(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
+[~,~,~,indTimeSTIMPerFile] = scriptCheckStimInNSXBIDS(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
 
 %% Sort stim event times into nsp1 or nsp2 file
 % new stim arrays

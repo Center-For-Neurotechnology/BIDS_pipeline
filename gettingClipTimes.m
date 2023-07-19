@@ -52,7 +52,7 @@ channInfo.stimChNumber = selChName1;
 
 % 2. Check alignment beween TXT files and NSX (when STIM actually ocurred!)
 titName = ''; % J: this is just for visualization so it's not important to perfect right now (also why it wasn't rewritten for sync stim)
-[fileNameStimSitesWNSXinfo,dataBipolarPerCh,indTimeSTIMPerFile] = scriptCheckBIDSStimInNSX(fileNameNSxPerNSP, [], resultsPath, stimAINP.chNames, channInfo, titName);
+[fileNameStimSitesWNSXinfo,dataBipolarPerCh,indTimeSTIMPerFile] = scriptCheckStimInNSXBIDS(fileNameNSxPerNSP, [], resultsPath, stimAINP.chNames, channInfo, titName);
 % **********************
 
 %% ********* CLIPPING **************************
