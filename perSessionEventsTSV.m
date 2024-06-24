@@ -25,8 +25,10 @@ function perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS
 % sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv
 filename_eventsTSV_nsp1 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
     taskName,'RAWNSP1_run-',ieeg_run,'_events.tsv'];
-filename_eventsTSV_nsp2 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
-    taskName,'RAWNSP2_run-',ieeg_run,'_events.tsv'];
+if ~isempty(filenameNSx_nsp2)
+    filename_eventsTSV_nsp2 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
+        taskName,'RAWNSP2_run-',ieeg_run,'_events.tsv'];
+end
 
 %% n/a values
 response_time = 'n/a';
@@ -44,10 +46,10 @@ stimLogChannelsNSP = [];
 % accounting for cerestim and nsp channel offsets and nsp2 = nsp1 + 128
 for i = 1:size(stimLogChannels,1)
     for j = 1:size(stimLogChannels,2)
-        if stimLogChannels(i,j) <= channInfo.bankInfo.bankA(end) % smallest 32 cerestim channels are connected to Bank 1 
+        if stimLogChannels(i,j) <= 32 %channInfo.bankInfo.bankA(end) % smallest 32 cerestim channels are connected to Bank 1 
             stimLogNSPs(i,j) = cerestimAllBanks(1);
             stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128*(cerestimAllBanks(1)==2) + channInfo.bankInfo.bankA(1)-1; % if NSP2, channel number needs +128
-        elseif stimLogChannels(i,j) <= channInfo.bankInfo.bankB(end) % next 32 smallest cerestim channels are connected to Bank 2 
+        elseif stimLogChannels(i,j) <= 64 %channInfo.bankInfo.bankB(end) % next 32 smallest cerestim channels are connected to Bank 2 
             stimLogNSPs(i,j) = cerestimAllBanks(2);
             stimLogChannelsNSP(i,j) = stimLogChannels(i,j)+128*(cerestimAllBanks(2)==2) + channInfo.bankInfo.bankB(1)-1-32;
         else 
@@ -57,7 +59,7 @@ for i = 1:size(stimLogChannels,1)
     end
 end
 
-%%
+%% TODO: ensure the stim channel names and numbers still align after removing scalp channels from hdrNS3_nsp1/2
 % getting the stim site channels
 stimBipolarSites = {}; % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP}
 for i = 1:size(stimLogChannelsNSP,1)
@@ -96,7 +98,9 @@ end
 
 %% get stim times
 fileNameNSxPerNSP{1} = filenameNSx_nsp1;
-fileNameNSxPerNSP{2} = filenameNSx_nsp2;
+if ~isempty(filenameNSx_nsp2)
+    fileNameNSxPerNSP{2} = filenameNSx_nsp2;
+end
 stimChNumber = unique(stimLogChannels,'rows','stable')'; 
 
 % STIMULATION CHANNELS
@@ -112,28 +116,42 @@ timeInfo.endNSxSec = [];
 
 dirResults = '';
 %AINP STIM Channel
-stimAINPChNames = {'SYNC'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
+stimAINPChNames = {'SYNC','ainp1'};%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
  
 % Find channel names
-channInfo = findChannelNamesInNSX(channInfo, [], fileNameNSxPerNSP); 
+channInfo = findChannelNamesInNSxBIDS(channInfo, [], fileNameNSxPerNSP); 
 titName = 'bids';
 
+% channInfo.isStimInAINP=0;
 % returns the index for stim at each nsp
 [~,~,~,indTimeSTIMPerFile] = scriptCheckStimInNSXBIDS(fileNameNSxPerNSP, fileNameStimSites, dirResults, stimAINPChNames, channInfo,titName, timeInfo.startNSxSec, timeInfo.endNSxSec);
 
 %% Sort stim event times into nsp1 or nsp2 file
 % new stim arrays
-stimTime_nsp1 = [];
-stimTime_nsp2 = [];
+stimTimeON_nsp1 = [];
+if ~isempty(filenameNSx_nsp2)
+    stimTimeON_nsp2 = [];
+end
+
+% stimIndStart 
 
 % adding stim index to per nsp arrays
 for i = 1:size(stimLogNSPs,1)
-    stimTime_nsp1(i,1) = indTimeSTIMPerFile{1,1}(i);
-    stimTime_nsp2(i,1) = indTimeSTIMPerFile{1,2}(i);    
+    stimTimeON_nsp1(i,1) = indTimeSTIMPerFile{1,1}(i);
+    if ~isempty(filenameNSx_nsp2)
+        stimTimeON_nsp2(i,1) = indTimeSTIMPerFile{1,2}(i);    
+    end
 end
 
-stimTime_nsp1 = stimTime_nsp1/hdrNS3_nsp1.hdr.Fs{1}; % converting time from index number to seconds (sec = index/sampling rate)
-stimTime_nsp2 = stimTime_nsp2/hdrNS3_nsp2.hdr.Fs{1};
+stimTimeON_nsp1 = stimTimeON_nsp1/hdrNS3_nsp1.hdr.Fs{1}; % converting time from index number to seconds (sec = index/sampling rate)
+if ~isempty(filenameNSx_nsp2)
+    stimTimeON_nsp2 = stimTimeON_nsp2/hdrNS3_nsp2.hdr.Fs{1};
+end
+
+stimTimeOFF_nsp1 = stimTimeON_nsp1+stimParameters.stimPulseDuration;
+if ~isempty(filenameNSx_nsp2)
+    stimTimeOFF_nsp2 = stimTimeON_nsp2+stimParameters.stimPulseDuration;
+end
 
 %% set up table vars    
 % creating cells for table()
@@ -155,24 +173,25 @@ stimCurrent(:) = {stimParameters.stimCurrent};
 stim_type(:) = {stimParameters.stim_type{2}}; 
 
 
+
 %% create tables and save tsv files
-varNames = {'onset','duration','electrical_stimulation_trial_type','response_time','stim_file','HED',...
+varNames = {'onset_sec','duration_ms','electrical_stimulation_trial_type','response_time','stim_file','HED',...
     'electrical_stimulation_StimOnset_sec','electrical_stimulation_StimOffset_sec','electrical_stimulation_Frequency_Hz',...
     'electrical_stimulation_Current_mA','electrical_stimulation_site','electrical_stimulation_type',...
     'electrical_stimulation_Channel1Stim','electrical_stimulation_Channel1StimNSP',...
     'electrical_stimulation_Channel2Stim','electrical_stimulation_Channel2StimNSP'};
 
-if ~isempty(stimTime_nsp1) % avoid saving an empty file if there were no stim events in that nsp
-    table_eventsTSV_nsp1 = table(stimTime_nsp1,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
-        stimTime_nsp1,stimTime_nsp1,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
+if ~isempty(stimTimeON_nsp1) % avoid saving an empty file if there were no stim events in that nsp
+    table_eventsTSV_nsp1 = table(stimTimeON_nsp1,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
+        stimTimeON_nsp1,stimTimeOFF_nsp1,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
         stimBipolarSites(:,2),stimBipolarSites(:,3),stimBipolarSites(:,4),stimBipolarSites(:,5),...
         'VariableNames', varNames); 
     writetable(table_eventsTSV_nsp1, filename_eventsTSV_nsp1, 'FileType', 'text', 'Delimiter', '\t');
 end
 
-if ~isempty(stimTime_nsp2)
-    table_eventsTSV_nsp2 = table(stimTime_nsp2,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
-        stimTime_nsp2,stimTime_nsp2,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
+if ~isempty(filenameNSx_nsp2)
+    table_eventsTSV_nsp2 = table(stimTimeON_nsp2,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
+        stimTimeON_nsp2,stimTimeOFF_nsp2,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
         stimBipolarSites(:,2),stimBipolarSites(:,3),stimBipolarSites(:,4),stimBipolarSites(:,5),...
         'VariableNames', varNames); 
     writetable(table_eventsTSV_nsp2, filename_eventsTSV_nsp2, 'FileType', 'text', 'Delimiter', '\t');
