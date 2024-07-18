@@ -1,4 +1,4 @@
-function perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hdrn,posFixNCS)
+function perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hdrn,posFixNCS,startNSxSec,endNSxSec)
 
 % This function is run once for each session. It creates edf and brain
 % vision files (ieeg, .edf, .vmrk, and .vhdr) with raw iEEG data.
@@ -73,6 +73,13 @@ cbScale = str2double(cADBitVolts{2}); %0.000000030517578125000001; %0.0000000610
 data = cbScale * double(dataValuesInt)*1000; %in miliVolts
 data = data';
 
+if isempty(startNSxSec), startNSxSec=0; end
+if isempty(endNSxSec), endNSxSec=size(data,2)/hdr.Fs; end
+indSamplesOfInterest = round(startNSxSec*hdrn.Fs+1): min(round(endNSxSec*hdrn.Fs),size(data,2));
+data = data(:,indSamplesOfInterest); 
+
+hdrn.nSamples = size(data,2);
+hdrn.time{1} = [1:hdrn.nSamples]/hdrn.Fs;   % time vector from header structure 
 
 
 
@@ -81,13 +88,13 @@ data = data';
 % save the data matrix here: [rows = channels, columns = samples]
 % scaledData_nsp1(scalpIndex_nsp1,:) = [];
 hdrn.trial{1} = data;
-
+% save('E:\BIDS_Neuralynx\debug_hdr\perSessionIEEGn_hdr_2','hdrn','-v7.3')
         
 %% create ieeg files       
 % creating hdr from the dataStruct created above
 hdrData = ft_fetch_header(hdrn);
-
-% save the files
+% 
+% % save the files
 ft_write_data(filename_IEEGn, hdrn.trial{1}, 'header', hdrData, 'dataformat', 'brainvision_eeg'); % brainvision files
 ft_write_data(filename_IEEGn, hdrn.trial{1}, 'header', hdrData, 'dataformat', 'edf'); % edf file
 

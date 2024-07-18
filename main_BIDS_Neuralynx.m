@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
-directoryBIDS = 'E:\BIDS_Neuralynx'; 
-sub_XXXX = 'sub-0000'; % the deidentified patient ID
+directoryBIDS = 'E:/BIDStesting/active_bids_pipeline/BIDS_pipeline/results'; 
+sub_XXXX = 'sub-200'; % the deidentified patient ID
 
 
 %% images (PLACEHOLDER, waiting for new MRI pipeline)
@@ -28,15 +28,11 @@ perParticipantImageJSON(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'E:\BIDStesting\local_data\MG197\MG197_ElectrodeInfo_RAS.xlsx';
+filename_RAS = 'E:\BIDStesting\local_data\MG200\MG200_ElectrodeInfo_RAS.xlsx';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
-
-
-
 %% per session files
-
 %% _channels.tsv
 % create a tsv file containing additional descriptions of the channels
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
@@ -44,15 +40,17 @@ taskName = 'NetworkWake1';
 ieeg_run = '01'; % BIDS stim session number for this participant
 posFixNCS = ''; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
 badChannels = ''; % assuming empty for now, can write a script to make this mat file later if needed
-foldername_neuralynx = 'E:\BIDStesting\local_data\MG197\NetworkWake1\Data\C3.ncs'; % path to any .ncs file in the session's data folder IMPORTANT: include the .ncs file name!
+foldername_neuralynx = 'E:\BIDS_Neuralynx\local_data\MG200\NetworkWake1\Neuralynx\C3.ncs'; % path to any .ncs file in the session's data folder IMPORTANT: include the .ncs file name!
 [hdrn] = perSessionChannelsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,badChannels,posFixNCS);
 
 
 %% _ieeg (edf, brainvision)
 % create edf and brainvision files containg raw iEEG data
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_ieeg.eeg
-% with extentions _ieeg.eeg, _ieeg.edf, _ieeg.vmrk, _ieeg.vhdr 
-perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hdrn,posFixNCS);
+% with extentions _ieeg.eeg, _ieeg.edf, _ieeg.vmrk, _ieeg.vhdr ]
+startNSxSec = 0; % in seconds, 0 for the entire recording
+endNSxSec = [1870]; % in seconds, [] for the entire recording
+perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hdrn,posFixNCS,startNSxSec,endNSxSec);
 %% _events.tsv
 % create a tsv file containing electrical stimulation events and parameters 
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv
@@ -61,14 +59,15 @@ stimParameters.stimFrequency = 0; % in Hz
 stimParameters.stimCurrent = 7; % in mA;
 stimParameters.stim_type = {'Bipolar','biphasic'};
 
-channInfo.bankInfo.bankA = 1:32; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
-channInfo.bankInfo.bankB = 65:96;
-channInfo.bankInfo.bankC = 129:160;
+channInfo.bankInfo.bankA = 65:96; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
+channInfo.bankInfo.bankB = 129:160;
+channInfo.bankInfo.bankC = 161:192;
 
-fileNameStimSites = 'E:\BIDStesting\local_data\MG197\NetworkWake1\Logfiles\NetworkSweepBipolChans-04_10-16-03.mat'; % updated cerestim log file format
+filename_chanListEMU = 'E:\BIDStesting\local_data\MG200\MG200_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
+fileNameStimSites = 'E:\BIDStesting\local_data\MG200\NetworkSweepBipolChans-06_09-55-08.mat'; % updated cerestim log file format
 stimChNames = 'CSC289'; % SYNC channel at CSC289
 perSessionEventsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,...
-    channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS)
+    channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS,filename_chanListEMU,startNSxSec,endNSxSec)
 
 %% _events.json
 % create sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.json

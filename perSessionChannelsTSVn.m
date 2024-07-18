@@ -83,7 +83,7 @@ end
 
 %% need recording file header info past here!
 %% values needed from data:
-FieldSelectionFlags = [0 0 0 0 1]; % setting Nlx2MatCSC args
+FieldSelectionFlags = [1 1 1 1 1]; % setting Nlx2MatCSC args
 HeaderExtractionFlag = 1;
 ExtractMode = 1;
 ExtractionModeVector = [];
@@ -95,7 +95,7 @@ fs_all = zeros(size(channel_list));
 for i = 1:length(channel_list)
     ncsFileName = [filepath,'\',channel_list{i},posFixNCS,'.ncs'];
     % get header info per channel
-    [Samples,Header] = Nlx2MatCSC(ncsFileName, FieldSelectionFlags, HeaderExtractionFlag, ExtractMode, ExtractionModeVector);
+    [Timestamps, ChannelNumbers, SampleFrequencies, NumberOfValidSamples, Samples, Header] = Nlx2MatCSC(ncsFileName, FieldSelectionFlags, HeaderExtractionFlag, ExtractMode, ExtractionModeVector);
     
     % parse header info
     lowPass = split(Header{25},' ');
@@ -128,7 +128,7 @@ statusDescription_all(:) = {'n/a'};
 channelGroup_all = cell(size(channel_list));
 for i = 1:size(channel_list,1)
     if ~isempty(channelType_SEEG{i})
-      channelGroup_all{i} = regexp(channel_list{i},'^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]{0,3}\d{1,2}$','match'); % first update: '^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]?','match'); % original: '^(L|R)[a-zA-Z]{2,3}','match'); '^(L|R)[a-zA-Z]{2,3}','match');
+      channelGroup_all{i} = regexp(channel_list{i},'^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]{0,3}','match'); % first update: '^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]?','match'); % original: '^(L|R)[a-zA-Z]{2,3}','match'); '^(L|R)[a-zA-Z]{2,3}','match');
     else
       channelGroup_all{i} = channel_list{i};
     end

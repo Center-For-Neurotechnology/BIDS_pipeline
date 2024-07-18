@@ -5,10 +5,9 @@ function perSessionEventsJSON(directoryBIDS,sub_XXXX,taskName,ieeg_run,Operating
 
 %% created filename
 % sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.json
-filename_eventsJSON_nsp1 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
-    taskName,'RAWNSP1_run-',ieeg_run,'_events.json'];
-filename_eventsJSON_nsp2 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
-    taskName,'RAWNSP2_run-',ieeg_run,'_events.json'];
+filename_eventsJSON = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
+    taskName,'RAW_run-',ieeg_run,'_events.json'];
+
 
 
 %% obj 1
@@ -43,8 +42,7 @@ struct_eventsJson.StimulusPresentation.Code = 'https://github.com/Center-For-Neu
 
 
 %% create json files
-json_helper(filename_eventsJSON_nsp1, struct_eventsJson)
-json_helper(filename_eventsJSON_nsp2, struct_eventsJson)
+json_helper(filename_eventsJSON, struct_eventsJson)
 
 end
 

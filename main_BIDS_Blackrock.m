@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
-directoryBIDS = 'E:\BIDS_Neuralynx\br'; 
-sub_XXXX = 'sub-0000'; % the deidentified patient ID
+directoryBIDS = 'E:/BIDStesting/active_bids_pipeline/BIDS_pipeline/results'; 
+sub_XXXX = 'sub-0169_BR'; % the deidentified patient ID
 
 
 %% images (PLACEHOLDER, waiting for new MRI pipeline)
@@ -53,7 +53,7 @@ filenameNS3_nsp2 = 'E:\BIDStesting\local_data\MG169\StimulationDay3\NSP2\10-0836
 % create edf and brainvision files containg raw iEEG data
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_ieeg.eeg
 % with extentions _ieeg.eeg, _ieeg.edf, _ieeg.vmrk, _ieeg.vhdr 
-perSessionIEEG(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2, hdrNS3_nsp1, hdrNS3_nsp2,scalpIndex_nsp1,scalpIndex_nsp2)
+perSessionIEEG(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2, hdrNS3_nsp1, hdrNS3_nsp2)
 %% _events.tsv
 % create a tsv file containing electrical stimulation events and parameters 
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv

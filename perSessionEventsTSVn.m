@@ -1,4 +1,4 @@
-function perSessionEventsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS)
+function perSessionEventsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS,filename_chanListEMU,startNSxSec,endNSxSec)
 % This function is run once for each session. It creates a tsv containing 
 % electrical stimulation events and parameters. 
 % The file will be saved in directoryBIDS\sub_XXXX\ses-postimp\ieeg\
@@ -59,9 +59,10 @@ stimLogChannels = stimLogChannels.stimchans(:,2:3); % works for single site (2 c
 cerestimChsInNeuralynxChs = zeros(size(stimLogChannels));
 
 % cerstim to neuralynx transform
-channInfo.bankInfo.bankA = 33:64; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
-channInfo.bankInfo.bankB = 65:96;
-channInfo.bankInfo.bankC = 129:160;
+% % below lines were addded for debugging
+% channInfo.bankInfo.bankA = 33:64; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
+% channInfo.bankInfo.bankB = 65:96;
+% channInfo.bankInfo.bankC = 129:160;
 
 for i = 1:size(stimLogChannels,1)
     for j = 1:size(stimLogChannels,2)
@@ -75,18 +76,24 @@ for i = 1:size(stimLogChannels,1)
     end
 end
 
+%% get EMU channel list (this is the order used for Cerestim channel numbers)
+chanListEMU = importdata(filename_chanListEMU);
+chanListEMU = chanListEMU.textdata.x2;
+chanListEMU = chanListEMU(3:size(chanListEMU,1),[2,5,8,11,13,16,19,22]);
+chanListEMU = reshape(chanListEMU,[],1);
+
 %% getting the stim site channel labels
 stimBipolarSites = cell(size(cerestimChsInNeuralynxChs)); % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP} don't need ind=3,5
 for i = 1:size(cerestimChsInNeuralynxChs,1)
 %     if stimLogChannelsNSP(i,1) <= 128 % have the stim channel numbers, sorting into nsp1 or nsp2 file % nsp doesn't matter anymore
-        stim_ch1 = hdrn.label(cerestimChsInNeuralynxChs(i,1)); % ch name string
+        stim_ch1 = chanListEMU(cerestimChsInNeuralynxChs(i,1)); % ch name string % instead of hdrn.label, use the xcel ch list
 %         stimBipolarSites{i,3} = 1;
 %     else
 %         stim_ch1 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,1)-128);
 %         stimBipolarSites{i,3} = 2;
 %     end
 %     if stimLogChannelsNSP(i,2) <= 128
-        stim_ch2 = hdrn.label(cerestimChsInNeuralynxChs(i,2)); % stim channels can be in different nsps
+        stim_ch2 = chanListEMU(cerestimChsInNeuralynxChs(i,2)); % stim channels can be in different nsps
 %         stimBipolarSites{i,5} = 1;
 %     else
 %         stim_ch2 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,2)-128);
@@ -122,26 +129,26 @@ if hdrStim.Fs ~= hdrn.Fs
     stimData = downsample(stimData, round(hdrStim.Fs / hdrn.Fs)); % assuming multiples! - no need for LP filtering because this is only to get stim timing
 end
 
-startNSxSec = 0;
-endNSxSec = [];
-indSamplesOfInterest = round(startNSxSec*hdrStim.Fs+1): size(stimData,1);% min(round(endNSxSec*hdrStim.Fs),size(stimData,2));
-indSamplesOfInterestStim = intersect(indSamplesOfInterest, 1:length(stimData));
-dataStim{1} = (stimData(indSamplesOfInterestStim))';
 
-thPulse = min(300, abs((max([dataStim{1}])-mean([dataStim{1}])))/3); % 1/3 of the max or 300mV DIFF
-% indTimeAllSTIMPulses = find(diff([0 dataStim{1}]) >= thPulse); % Find all STIM pulses
+if isempty(startNSxSec), startNSxSec=0; end
+if isempty(endNSxSec), endNSxSec=size(stimData,2)/hdr.Fs; end
+indSamplesOfInterest = round(startNSxSec*hdrn.Fs+1): min(round(endNSxSec*hdrn.Fs),size(stimData,1));
+indSamplesOfInterestStim = intersect(indSamplesOfInterest, 1:length(stimData));
+dataStim{1} = abs(stimData(indSamplesOfInterestStim))';
+%dataStim{1} = abs(stimData)';
+
+thPulse = min(10, max([dataStim{1}])/3); % 1/3 of the max or 300mV DIFF
+
 indTimeAllSTIMPulses = find(abs(diff([mean([dataStim{1}]) dataStim{1}])) >= thPulse); % Find all STIM pulses
 
 % Detect pulses on analog inputs from NSP data
-stimAINPChNames = {'SYNC'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim, detected stim
-% minDistSTIMPulses= [50 * ones(1,length(stimAINPChNames))];
-minDistSTIMPulses = 4205;
+minDistSTIMPulses = 50; % 25ms minimum distance between pulse - to aviod several hits
 if length(minDistSTIMPulses)>=1 && minDistSTIMPulses(1)>0
     indRepeatedPulses = find(diff([ 0 indTimeAllSTIMPulses])< minDistSTIMPulses(1));
     indTimeAllSTIMPulses(indRepeatedPulses) = [];% Get only first point of the pulse or train - remove subsequent points
 end
 
-
+% indTimeAllSTIMPulses = indTimeAllSTIMPulses(1:size(stimLogChannels,1));
 
 indTimeAllSTIM = indTimeAllSTIMPulses;
 hdrn.hdrStim = hdrStim;

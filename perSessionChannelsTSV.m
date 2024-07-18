@@ -22,13 +22,14 @@
 %       functions perSessionIEEG() and perSessionEventsTSV()
 
 %% file names of the saved .tsv files
+
 filename_channelsTSV_nsp1 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
     taskName,'RAWNSP1_run-',ieeg_run,'_channels.tsv'];
-if ~exist(filename_channelsTSV_nsp1,'dir'), mkdir(filename_channelsTSV_nsp1); end
+%if ~exist(filename_channelsTSV_nsp1,'dir'), mkdir(filename_channelsTSV_nsp1); end
 if ~isempty(filenameNS3_nsp2)
     filename_channelsTSV_nsp2 = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XXXX,'_ses-postimp_task-',...
         taskName,'RAWNSP2_run-',ieeg_run,'_channels.tsv'];
-    if ~exist(filename_channelsTSV_nsp2,'dir'), mkdir(filename_channelsTSV_nsp2); end
+    %if ~exist(filename_channelsTSV_nsp2,'dir'), mkdir(filename_channelsTSV_nsp2); end
 end
 
 %% open ns3 headers
