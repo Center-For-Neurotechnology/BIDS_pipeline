@@ -30,11 +30,17 @@ o	buffer_time_minutes: the number of minutes that will be added before and after
 •	run the function
 
 •	a plot with the input channels will pop up and the user can click at the start and end of each session and press enter
+
+![image](https://user-images.githubusercontent.com/76748014/226079427-48bb8944-df76-40db-b94b-047649373b95.png)
+
  
 
 •	a new window will pop up with subplots of all your selected sessions
 
 •	the command window will prompt you for the name of the first session, type the name in the command window and press enter (this will be the name of the new nsx files, “Session1.ns3”, “Session1.nev”)
+
+![image](https://user-images.githubusercontent.com/76748014/226079434-f5fd6ebb-9e46-4e63-b7ae-3d07c995d265.png)
+
  
 
 •	The command window will then ask to confirm whether you want to save the file, type “Y” and press enter to continue
