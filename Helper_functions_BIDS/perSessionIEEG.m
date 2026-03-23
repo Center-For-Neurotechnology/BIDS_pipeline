@@ -31,16 +31,24 @@ end
 %    tempInv_nsp2 = ~ismember(1:size(hdrNS3_nsp2.hdr.label,1),scalpIndex_nsp2)';
 %end
 
-hdrNS3_nsp1.label = hdrNS3_nsp1.hdr.label;  % labels from .ns3 header structure
-hdrNS3_nsp1.time{1} = [1:hdrNS3_nsp1.hdr.nSamples]/hdrNS3_nsp1.hdr.Fs{1};   % time vector from .ns3 header structure
-hdrNS3_nsp1.fsample = hdrNS3_nsp1.hdr.Fs{1};   % sampling freq from .ns3 header structure
+% hdrNS3_nsp1.label = hdrNS3_nsp1.hdr.label;  % labels from .ns3 header structure
+% hdrNS3_nsp1.time{1} = [1:hdrNS3_nsp1.hdr.nSamples]/hdrNS3_nsp1.hdr.Fs{1};   % time vector from .ns3 header structure
+% hdrNS3_nsp1.fsample = hdrNS3_nsp1.hdr.Fs{1};   % sampling freq from .ns3 header structure
+% hdrNS3_nsp1.hdr.nSamplesPre = 0;
+% hdrNS3_nsp1.hdr.nTrials = 1;
+% labels must be cellstr and unique
+hdrNS3_nsp1.label = cellstr(hdrNS3_nsp1.hdr.label);
+% sampling frequency
+hdrNS3_nsp1.fsample = hdrNS3_nsp1.hdr.Fs{1};   % or .Fs if not cell
+hdrNS3_nsp1.time{1} = (1:hdrNS3_nsp1.hdr.nSamples)/hdrNS3_nsp1.fsample;
+% trial metadata
 hdrNS3_nsp1.hdr.nSamplesPre = 0;
-hdrNS3_nsp1.hdr.nTrials = 1;
+hdrNS3_nsp1.hdr.nTrials     = 1;
 
 % nsp2
 if ~isempty(filenameNSx_nsp2)
-    hdrNS3_nsp2.label = hdrNS3_nsp2.hdr.label;
-    hdrNS3_nsp2.time{1} = [1:hdrNS3_nsp2.hdr.nSamples]/hdrNS3_nsp2.hdr.Fs{1};
+    hdrNS3_nsp2.label = cellstr(hdrNS3_nsp2.hdr.label);
+    hdrNS3_nsp2.time{1} = (1:hdrNS3_nsp2.hdr.nSamples)/hdrNS3_nsp2.hdr.Fs{1};
     hdrNS3_nsp2.fsample = hdrNS3_nsp2.hdr.Fs{1};
     hdrNS3_nsp2.hdr.nSamplesPre = 0;
     hdrNS3_nsp2.hdr.nTrials = 1;
@@ -88,10 +96,10 @@ if ~isempty(filenameNSx_nsp2)
     hdrData_nsp2 = ft_fetch_header(hdrNS3_nsp2);
 end
 % save the files
-ft_write_data(filename_IEEG_nsp1, hdrNS3_nsp1.trial{1}, 'header', hdrData_nsp1, 'dataformat', 'brainvision_eeg'); % brainvision files
+% ft_write_data(filename_IEEG_nsp1, hdrNS3_nsp1.trial{1}, 'header', hdrData_nsp1, 'dataformat', 'brainvision_eeg'); % brainvision files
 ft_write_data(filename_IEEG_nsp1, hdrNS3_nsp1.trial{1}, 'header', hdrData_nsp1, 'dataformat', 'edf'); % edf file
 if ~isempty(filenameNSx_nsp2)
-    ft_write_data(filename_IEEG_nsp2, hdrNS3_nsp2.trial{1}, 'header', hdrData_nsp2, 'dataformat', 'brainvision_eeg');
+%     ft_write_data(filename_IEEG_nsp2, hdrNS3_nsp2.trial{1}, 'header', hdrData_nsp2, 'dataformat', 'brainvision_eeg');
     ft_write_data(filename_IEEG_nsp2, hdrNS3_nsp2.trial{1}, 'header', hdrData_nsp2, 'dataformat', 'edf');
 end
 

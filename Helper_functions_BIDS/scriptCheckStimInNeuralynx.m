@@ -49,12 +49,6 @@ selBipolar1 = reshape(1:length(selChNames1),2,length(selChNames1)/2)'; %[1,2;3,4
 selChNamesInCERESTIM = channInfo.stimChNumber(1,:)'; %[1 2 13 14 18 19 39 40];
 
 
-stimChNames = {'SYNC'}; % Not really needed
-chNamesSTIM = 'CSC289'; % this is where SYNC (AINP1) is
-
-
-verbose = 1;
-
 [dataBipolarPerCh{1}, chNamesBipolar{1}, dataStim, indTimeAllSTIM, dataReferentialPerCh, chNamesRefToPlot, allChNames{1}, hdr] = GetBipolarEEGFromNeuralynx(posFixNCS, dirPatient, dirData, xlsFileName, selChNames1, selBipolar1, stimAINPChNames, startNSxSec, endNSxSec);
 if channInfo.isStimInAINP ==1 % whether stim information is on AINP or we should get it from stim artifact on stim channels
     indTimeSTIM = indTimeAllSTIM{1};

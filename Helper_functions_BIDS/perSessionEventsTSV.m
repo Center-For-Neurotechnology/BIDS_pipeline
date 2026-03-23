@@ -39,7 +39,9 @@ HED = 'n/a';
 % setting up cerestim bank info
 cerestimAllBanks = [channInfo.bankInfo.bankANSP; channInfo.bankInfo.bankBNSP; channInfo.bankInfo.bankCNSP];
 stimLogChannels = load(fileNameStimSites);
-stimLogChannels = stimLogChannels.stimchans(:,1:2); % works for single site (2 channels) stim
+% stimMatrix = stimLogChannels.stimMatrix; %for thalamic matrix
+stimLogChannels = stimLogChannels.stimMatrix(:,2:3); % works for single site (2 channels) stim
+% stimLogChannels = stimLogChannels.stimchans(:,2:3); % works for single site (2 channels) stim
 stimLogNSPs = [];
 stimLogChannelsNSP = [];
 
@@ -64,34 +66,46 @@ end
 stimBipolarSites = {}; % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP}
 for i = 1:size(stimLogChannelsNSP,1)
     if stimLogChannelsNSP(i,1) <= 128 % have the stim channel numbers, sorting into nsp1 or nsp2 file
-        stim_ch1 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,1));
+        stim_ch1 = hdrNS3_nsp1.hdr.label{stimLogChannelsNSP(i,1)};
         stimBipolarSites{i,3} = 1;
     else
-        stim_ch1 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,1)-128);
+        stim_ch1 = hdrNS3_nsp2.hdr.label{stimLogChannelsNSP(i,1)-128};
         stimBipolarSites{i,3} = 2;
     end
     if stimLogChannelsNSP(i,2) <= 128
-        stim_ch2 = hdrNS3_nsp1.hdr.label(stimLogChannelsNSP(i,2)); % stim channels can be in different nsps
+        stim_ch2 = hdrNS3_nsp1.hdr.label{stimLogChannelsNSP(i,2)}; % stim channels can be in different nsps
         stimBipolarSites{i,5} = 1;
     else
-        stim_ch2 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,2)-128);
+        stim_ch2 = hdrNS3_nsp2.hdr.label{stimLogChannelsNSP(i,2)-128};
         stimBipolarSites{i,5} = 2;
     end
-    stimBipolarSites{i,1} = join([stim_ch1 stim_ch2],'-'); % sorting stim event into channel 1's nsp file
+    stimBipolarSites{i,1} = sprintf('%s-%s', stim_ch1, stim_ch2); % sorting stim event into channel 1's nsp file
     stimBipolarSites{i,2} = stimLogChannelsNSP(i,1); % stim_ch1;
     stimBipolarSites{i,4} = stimLogChannelsNSP(i,2); % stim_ch2;
 end
 
 % creating 'electrical_stimulation_trial_type' from existing variables
 % 'Bipolar Single Pulse stim, channels: LTB_10-LTB_11, current: 7 mA, stimulation duration: 0.233 ms, frequency: 0 Hz'
+% stimTrialType = {};
+% part1 = join([stimParameters.stim_type{1},"Single Pulse stim"],' ');
+% part3 = join(["current:", string(stimParameters.stimCurrent), 'mA'],' ');
+% part4 = join(["stimulation duration:", string(stimParameters.stimPulseDuration), 'ms'],' ');
+% part5 = join(["frequency:", string(stimParameters.stimFrequency), 'Hz'],' ');
+% 
+% for i = 1:size(stimBipolarSites,1) % both onset_sec and stimBipolarSites should be the same length/size
+%     part2 = join(["channels:", stimBipolarSites{i}],' ');
+%     stimTrialType{i,1} = join([part1,part2,part3,part4,part5],', ');    
+% end
+% Thalamic Matrix
 stimTrialType = {};
 part1 = join([stimParameters.stim_type{1},"Single Pulse stim"],' ');
-part3 = join(["current:", string(stimParameters.stimCurrent), 'mA'],' ');
-part4 = join(["stimulation duration:", string(stimParameters.stimPulseDuration), 'ms'],' ');
-part5 = join(["frequency:", string(stimParameters.stimFrequency), 'Hz'],' ');
+
 
 for i = 1:size(stimBipolarSites,1) % both onset_sec and stimBipolarSites should be the same length/size
     part2 = join(["channels:", stimBipolarSites{i}],' ');
+    part3 = "current: " + string(stimMatrix(i,5)) + " mA";
+    part4 = "stimulation duration:" + string(stimMatrix(i,6)) + "ms";
+    part5 = "frequency:" + string(stimMatrix(i,6)) +  "Hz";
     stimTrialType{i,1} = join([part1,part2,part3,part4,part5],', ');    
 end
 
@@ -116,7 +130,7 @@ timeInfo.endNSxSec = [];
 
 dirResults = '';
 %AINP STIM Channel
-stimAINPChNames = {'SYNC','ainp1'};%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
+stimAINPChNames = ('ainp9');%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
  
 % Find channel names
 channInfo = findChannelNamesInNSxBIDS(channInfo, [], fileNameNSxPerNSP); 

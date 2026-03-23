@@ -46,6 +46,7 @@ hdrn.hdr.nTrials = 1;
 % 
 
 %% get continuous recordings
+% hdrn.label(strcmp(hdrn.label, 'SYNC')) = [];
 nChannels = numel(hdrn.label);
 iChToExclude=[];
 [filepath,name,ext] = fileparts(foldername_neuralynx);
@@ -55,33 +56,36 @@ for iCh=1:nChannels
     [Timestamps, ChannelNumbers, SampleFrequencies, NumberOfValidSamples, Samples, Header] = ...
         Nlx2MatCSC(ncsFileName,[1 1 1 1 1], 1, 1, [] );
     if length(unique(ChannelNumbers))==1 && length(unique(SampleFrequencies))
-        chNumber(iCh) = unique(ChannelNumbers);
         dataValuesInt(:,iCh) = Samples(:); % assumes all the same size!
     else
         iChToExclude = [iChToExclude, iCh];
-        disp(['Excluding Channel: ',hdrn.label{iCh} ,' - Corrupted File: ', ncsFileName]);
     end
 end
-
 % remove corrupt channels
-hdrn.label(iChToExclude)=[];
-dataValuesInt(:,iChToExclude)=[];
-chNumber(iChToExclude)=[];
+if ~isempty(iChToExclude)
+    hdrn.label(iChToExclude)=[];
+    dataValuesInt(:,iChToExclude)=[];
+    chNumber(iChToExclude)=[];
+end
+
+% hdrn.Fs = targetFs;
+% t0 = Timestamps(1); % microseconds
+% % Convert to datetime in UTC
+% dt = datetime(t0/1e6,'ConvertFrom','posixtime','TimeZone','UTC');
+
 
 cADBitVolts = split(Header{17},' '); % field 17 is the ADBitVolts - use to get amploitude in Volts
 cbScale = str2double(cADBitVolts{2}); %0.000000030517578125000001; %0.000000061035156250000001;% as comparison: BlackRock: (double(MaxAnalogValue)-double(dataNEV.ElectrodesInfo(1).MinAnalogValue))/(double(dataNEV.ElectrodesInfo(1).MaxDigiValue)-double(dataNEV.ElectrodesInfo(1).MinDigiValue)); %0.25 corresponds to MaxAnalo / MaxDigital Values
 data = cbScale * double(dataValuesInt)*1000; %in miliVolts
-data = data';
+data = data'; 
 
 if isempty(startNSxSec), startNSxSec=0; end
-if isempty(endNSxSec), endNSxSec=size(data,2)/hdr.Fs; end
+if isempty(endNSxSec), endNSxSec=size(data,2)/hdrn.Fs; end
 indSamplesOfInterest = round(startNSxSec*hdrn.Fs+1): min(round(endNSxSec*hdrn.Fs),size(data,2));
 data = data(:,indSamplesOfInterest); 
 
 hdrn.nSamples = size(data,2);
 hdrn.time{1} = [1:hdrn.nSamples]/hdrn.Fs;   % time vector from header structure 
-
-
 
 
 %% grabbing the ns3 eeg data
@@ -90,13 +94,17 @@ hdrn.time{1} = [1:hdrn.nSamples]/hdrn.Fs;   % time vector from header structure
 hdrn.trial{1} = data;
 % save('E:\BIDS_Neuralynx\debug_hdr\perSessionIEEGn_hdr_2','hdrn','-v7.3')
         
-%% create ieeg files       
+% % create ieeg files       
 % creating hdr from the dataStruct created above
 hdrData = ft_fetch_header(hdrn);
-% 
+
+
+% hdrData.orig.edf = struct();
+% % Insert start date/time as cell arrays
+% hdrData.orig.edf.startdate = datestr(dt,'dd.mm.yy');
+% hdrData.orig.edf.starttime = datestr(dt,'HH.MM.SS');
+% disp(hdrData.orig.edf.startdate)
+% disp(hdrData.orig.edf.starttime)
 % % save the files
-ft_write_data(filename_IEEGn, hdrn.trial{1}, 'header', hdrData, 'dataformat', 'brainvision_eeg'); % brainvision files
 ft_write_data(filename_IEEGn, hdrn.trial{1}, 'header', hdrData, 'dataformat', 'edf'); % edf file
 
-
-end

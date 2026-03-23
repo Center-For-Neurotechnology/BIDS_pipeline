@@ -74,10 +74,11 @@ indTimeSTIMPerFile{1} = indTimeSTIM;
 
 %% Check alignment beween TXT files and NSX (when STIM actually ocurred!)
 nStim = length(indTimeSTIM);
-[stimSitesFromLog] = readFileWithSTIMsitesPerTrialBIDS(fileNameStimSites);
+[stimSitesFromLog] = readFileWithSTIMsitesPerTrialBIDS(stimLogFile);
 if isempty(stimSitesFromLog) %if NO file Return empty and then ->USE ALL STIM
     stimSitesFromLog = zeros(length(indTimeSTIM),3);
-    stimSitesFromLog(:,1) = 0:length(indTimeSTIM)-1;
+    stimSitesFromLog(:,1) = 0:length(indTimeSTIM)-1; 
+%     stimSitesFromLog(:,2) = find(strncmpi(allChNames(1),stimAINPChNames(1),length(stimAINPChNames(1))));
     stimSitesFromLog(:,2) = find(strncmpi(allChNames{1},stimAINPChNames{1},length(stimAINPChNames{1})));
     stimSitesFromLog(:,3) = stimSitesFromLog(:,2) +1; % Assumes consecutive!!
 end
