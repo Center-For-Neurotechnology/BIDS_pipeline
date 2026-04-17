@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
 % subj - MG237
-directoryBIDS = 'D:\krishma\BIDS_pipeline'; 
+directoryBIDS = ''; 
 sub_XXXX = 'sub-8s7o'; % the deidentified patient ID
 
 % % images (PLACEHOLDER, waiting for new MRI pipeline)
@@ -28,7 +28,7 @@ sub_XXXX = 'sub-8s7o'; % the deidentified patient ID
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'O:\ElectrodeLocalizations\thalamicMapping\MG237\MG237_SurferOutput\MG237_RAS_Electrode_Parc.csv'; %need to add good/bad channels column
+filename_RAS = ''; %need to add good/bad channels column
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 %% per session files
