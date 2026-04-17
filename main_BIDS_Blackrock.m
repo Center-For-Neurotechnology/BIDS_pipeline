@@ -39,8 +39,8 @@ taskName = 'ThalamicMatrix';
 ieeg_run = '01';
 badChannels_nsp1 = ''; % assuming empty for now, can write a script to make this mat file later
 badChannels_nsp2 = '';
-filenameNS3_nsp1 = 'K:\StimDataBackup\Data_Stimulation\MG237\ThalamicMatrix1\RawData\NSP1\20260211-173802-004.ns3'; % path to nsp1 ns3 
-filenameNS3_nsp2 = 'K:\StimDataBackup\Data_Stimulation\MG237\ThalamicMatrix1\RawData\NSP2\20260211-173804-004.ns3';  % path to nsp2 ns3, leave empty if just using nsp1
+filenameNS3_nsp1 = ''; % path to nsp1 ns3 
+filenameNS3_nsp2 = '';  % path to nsp2 ns3, leave empty if just using nsp1
 [hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,...
     filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2);
 
@@ -64,7 +64,7 @@ channInfo.bankInfo.bankC = 1:32;
 channInfo.bankInfo.bankANSP = 1;% Which NSP (1 or 2) correspond to each bank 
 channInfo.bankInfo.bankBNSP = 1;
 channInfo.bankInfo.bankCNSP = 2;
-fileNameStimSites = 'K:\StimDataBackup\Data_Stimulation\MG237\ThalamicMatrix1\Logfiles\Matrix-11-Feb-2026_19-10-30.mat';
+fileNameStimSites = '';
 perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,stimParameters,...
     channInfo,fileNameStimSites,hdrNS3_nsp1,hdrNS3_nsp2)
 
