@@ -33,7 +33,8 @@ end
 % % Start Diary
 % diary([dirResults,filesep,'log',pName,'scriptCheckStimInNSX.log'])
 
-minSTIMDistance = 3700;%50; % 25ms minimum distance between pulse - to aviod several hits
+% minSTIMDistance = 3700;%50; % 25ms minimum distance between pulse - to aviod several hits
+minSTIMDistance = 50; % 25ms minimum distance between pulse - to aviod several hits
 
 %% Plot Stim
  % NSP1
@@ -42,7 +43,7 @@ minSTIMDistance = 3700;%50; % 25ms minimum distance between pulse - to aviod sev
 selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==1));%channInfo.stimChNumberInNSX(:,channInfo.NSPnumber==1); %[1 2 13 14 18 19 39 40];
 % selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==1)','rows'); % temp fix for non unique chans
 selChNames1 = selChNames1(selChNames1~=0);
-selChNames1 = selChNames1(:)';
+
 selChNamesInCERESTIM = unique(channInfo.stimChNumber(channInfo.NSPnumber==1)); %channInfo.stimChNumber(1,channInfo.NSPnumber==1)'; %[1 2 13 14 18 19 39 40];
 selChNamesInCERESTIM = selChNamesInCERESTIM(selChNamesInCERESTIM~=0);
 selChNamesInCERESTIM = selChNamesInCERESTIM';
@@ -74,7 +75,7 @@ indTimeSTIMPerFile{1} = indTimeSTIM;
 
 %% Check alignment beween TXT files and NSX (when STIM actually ocurred!)
 nStim = length(indTimeSTIM);
-[stimSitesFromLog] = readFileWithSTIMsitesPerTrialBIDS(stimLogFile);
+[stimSitesFromLog] = readFileWithSTIMsitesPerTrialBIDS(fileNameStimSites);
 if isempty(stimSitesFromLog) %if NO file Return empty and then ->USE ALL STIM
     stimSitesFromLog = zeros(length(indTimeSTIM),3);
     stimSitesFromLog(:,1) = 0:length(indTimeSTIM)-1; 
@@ -92,7 +93,7 @@ end
 
  %% NSP2
  if numel(fileNameNSxPerNSP)>1% && sum(channInfo.NSPnumber==2,'all')>0
-     selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==2)); %selChNames1 = [159 160]-128;
+     selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==2)); %selChNames1 = [159 160]-128; %%figure this out!!
      % selChNames1 = unique(channInfo.stimChNumberInNSX(channInfo.NSPnumber==2),'rows')'; % temp non unique files
      selChNames1 = selChNames1(selChNames1~=0);%';
      selChNames1 = selChNames1(:)';

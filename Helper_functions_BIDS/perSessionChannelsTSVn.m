@@ -49,31 +49,31 @@ end
 
 %% get channel types
 % categorizing each channel name into a group (SEEG,EEG,EOC,EMG,ECG,MISC,TRIG)
-channelType_SEEG = regexp(channel_list,'^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]{0,3}\d{1,2}$'); % first update: '^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]?','match'); % Original: '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');
-channelType_EEG = regexp(channel_list, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
-channelType_EOC = regexp(channel_list, '^(L|R)OC$');
-channelType_EMG = regexp(channel_list, '^EMG');
-channelType_ECG = regexp(channel_list, '(^EKG|Pulse)');
-channelType_MISC = regexp(channel_list, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)');
-channelType_TRIG = regexp(channel_list, 'trigger','ignorecase');
-
+channelType_SEEG = ~cellfun('isempty', regexp(channel_list, ...
+    '^(L|R)[A-Za-z]+[-]?[A-Za-z]*\d*[A-Za-z]?$','once'));
+channelType_EEG = ~cellfun('isempty', regexp(channel_list, '^[FTOCPS].*(\d|Z)$','once'));
+channelType_EOC = ~cellfun('isempty', regexp(channel_list, '^(L|R)OC$','once'));
+channelType_EMG = ~cellfun('isempty', regexp(channel_list, '^EMG','once'));
+channelType_ECG = ~cellfun('isempty', regexp(channel_list, '(EKG|Pulse)','once'));
+channelType_MISC = ~cellfun('isempty', regexp(channel_list, '(RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)','once'));
+channelType_TRIG = ~cellfun('isempty', regexp(channel_list, 'trigger','once','ignorecase'));
 
 % creating cell with channel types to use in tsv 
 channelType_all = cell(size(channel_list));
 for i = 1:size(channel_list,1)
-    if ~isempty(channelType_TRIG{i})
+    if channelType_TRIG(i)
         channelType_all{i} = 'TRIG';
-    elseif ~isempty(channelType_EEG{i})
+    elseif channelType_EEG(i)
         channelType_all{i} = 'EEG';
-    elseif ~isempty(channelType_EOC{i})
+    elseif channelType_EOC(i)
         channelType_all{i} = 'EOC';
-    elseif ~isempty(channelType_EMG{i})
+    elseif channelType_EMG(i)
         channelType_all{i} = 'EMG';
-    elseif ~isempty(channelType_ECG{i})
+    elseif channelType_ECG(i)
         channelType_all{i} = 'ECG';
-    elseif ~isempty(channelType_MISC{i})
+    elseif channelType_MISC(i)
         channelType_all{i} = 'MISC';
-    elseif ~isempty(channelType_SEEG{i})
+    elseif channelType_SEEG(i)
         channelType_all{i} = 'SEEG';
     else 
         channelType_all{i} = 'TRIG';
@@ -127,7 +127,7 @@ statusDescription_all(:) = {'n/a'};
 % get channel groups (electrode, scalp, trigger, etc)
 channelGroup_all = cell(size(channel_list));
 for i = 1:size(channel_list,1)
-    if ~isempty(channelType_SEEG{i})
+    if channelType_SEEG(i)
       channelGroup_all{i} = regexp(channel_list{i},'^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]{0,3}','match'); % first update: '^(L|R)[a-zA-Z]{2,3}[-]?[a-zA-Z]?','match'); % original: '^(L|R)[a-zA-Z]{2,3}','match'); '^(L|R)[a-zA-Z]{2,3}','match');
     else
       channelGroup_all{i} = channel_list{i};

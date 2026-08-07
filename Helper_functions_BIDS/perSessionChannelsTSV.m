@@ -38,74 +38,105 @@ headerNS3_nsp2 = openNSx(filenameNS3_nsp2,'noread');
 
 %% REQUIRED
 %% get channel names
-% relabelled xxxx to avoid duplication error
 channelNames_nsp1 = extractfield(headerNS3_nsp1.ElectrodesInfo,'Label')';
-channelNames_nsp1 = regexprep(channelNames_nsp1, '[^\w-]', '');
-idx = find(strcmp(channelNames_nsp1, 'xxxx'));
-for k = 1:length(idx)
-    channelNames_nsp1{idx(k)} = sprintf('xxxx%d',k);
+channelNames_nsp1 = regexprep(string(channelNames_nsp1), '\W', ''); % getting rid of whitespace
+% fill blank / xxxx channel names with sequential placeholders (xxxx01, xxxx02, ...)
+isBlank_nsp1 = ismissing(channelNames_nsp1) | strlength(strtrim(channelNames_nsp1)) == 0 | startsWith(strtrim(channelNames_nsp1), "xxxx");   % also catch existing xxxx names
+blankIdx_nsp1 = find(isBlank_nsp1);
+for k = 1:numel(blankIdx_nsp1)
+    channelNames_nsp1(blankIdx_nsp1(k)) = sprintf('xxxx%02d', k);
 end
 if ~isempty(filenameNS3_nsp2)
     channelNames_nsp2 = extractfield(headerNS3_nsp2.ElectrodesInfo,'Label')';
-    channelNames_nsp2 = regexprep(channelNames_nsp2, '[^\w-]', '');
-    idx = find(strcmp(channelNames_nsp2, 'xxxx'));
-    for k = 1:length(idx)
-        channelNames_nsp2{idx(k)} = sprintf('xxxx%d',k);
+    channelNames_nsp2 = regexprep(string(channelNames_nsp2), '\W', '');
+    % fill blank channel names with placeholders (xxxx01, xxxx02, ...)
+    isBlank_nsp2 = ismissing(channelNames_nsp2) | strlength(strtrim(channelNames_nsp2)) == 0 | startsWith(strtrim(channelNames_nsp2), "xxxx");   % also catch existing xxxx names
+    blankIdx_nsp2 = find(isBlank_nsp2);
+    for k = 1:numel(blankIdx_nsp2)
+        channelNames_nsp2(blankIdx_nsp2(k)) = sprintf('xxxx%02d', k);
     end
+end
 
 %% get channel types
 % NSP1
 % categorizing each channel name into a group (SEEG,EEG,EOC,EMG,ECG,MISC,TRIG)
-channelType_nsp1_SEEG = ~cellfun('isempty', regexp(channelNames_nsp1, ...
-    '^(L|R)[A-Za-z]+[-]?[A-Za-z]*\d+$','once'));
-channelType_nsp1_EEG = ~cellfun('isempty', regexp(channelNames_nsp1, '^[FTOCPS].*\d$','once'));
-channelType_nsp1_EOC = ~cellfun('isempty', regexp(channelNames_nsp1, '^(L|R)OC$','once'));
-channelType_nsp1_EMG = ~cellfun('isempty', regexp(channelNames_nsp1, '^EMG','once'));
-channelType_nsp1_ECG = ~cellfun('isempty', regexp(channelNames_nsp1, '(EKG|Pulse)','once'));
-channelType_nsp1_MISC = ~cellfun('isempty', regexp(channelNames_nsp1, '(RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)','once'));
-channelType_nsp1_TRIG = ~cellfun('isempty', regexp(channelNames_nsp1, 'trigger','once','ignorecase'));
+channelType_nsp1_SEEG = regexp(channelNames_nsp1,'^(L|R)[a-zA-Z]{1,3}[-]?[a-zA-Z]{0,3}\d{1,2}$'); % Original: '^(L|R)[a-zA-Z]{2,3}\d{1,2}$');       % J: new ch names update?
+channelType_nsp1_EEG = regexp(channelNames_nsp1, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
+channelType_nsp1_EOC = regexp(channelNames_nsp1, '^(L|R)OC$');
+channelType_nsp1_EMG = regexp(channelNames_nsp1, '^EMG');
+channelType_nsp1_ECG = regexp(channelNames_nsp1, '(^EKG|Pulse)');
+channelType_nsp1_MISC = regexp(channelNames_nsp1, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%|^\s*$)');
+channelType_nsp1_TRIG = regexp(channelNames_nsp1, '(trigger|^TRIG8|^SYNC9)','ignorecase');
 scalpIndex_nsp1 = [];
 scalpCounter_nsp1 = 1;
 
-channelType_nsp1_all = repmat("UNKNOWN", size(channelNames_nsp1));
-
-channelType_nsp1_all(channelType_nsp1_TRIG) = "TRIG";
-channelType_nsp1_all(channelType_nsp1_EEG)  = "EEG";
-channelType_nsp1_all(channelType_nsp1_EOC)  = "EOC";
-channelType_nsp1_all(channelType_nsp1_EMG)  = "EMG";
-channelType_nsp1_all(channelType_nsp1_ECG)  = "ECG";
-channelType_nsp1_all(channelType_nsp1_MISC) = "MISC";
-channelType_nsp1_all(channelType_nsp1_SEEG) = "SEEG";
-
-scalpIndxLogical_nsp1 = channelType_nsp1_all=="EEG" | channelType_nsp1_all=="EOC";
-
+% creating cell with channel types to use in tsv 
+channelType_nsp1_all = cell(size(channelNames_nsp1));
+for i = 1:size(channelNames_nsp1)
+    if ~isempty(channelType_nsp1_TRIG{i})
+        channelType_nsp1_all{i} = 'TRIG';
+    elseif ~isempty(channelType_nsp1_EEG{i})
+        channelType_nsp1_all{i} = 'EEG';
+        scalpIndex_nsp1(scalpCounter_nsp1) = i;
+        scalpCounter_nsp1 = scalpCounter_nsp1 + 1;  % getting scalp channels
+    elseif ~isempty(channelType_nsp1_EOC{i})
+        channelType_nsp1_all{i} = 'EOC';
+        scalpIndex_nsp1(scalpCounter_nsp1) = i;
+        scalpCounter_nsp1 = scalpCounter_nsp1 + 1;
+    elseif ~isempty(channelType_nsp1_EMG{i})
+        channelType_nsp1_all{i} = 'EMG';
+    elseif ~isempty(channelType_nsp1_ECG{i})
+        channelType_nsp1_all{i} = 'ECG';
+    elseif ~isempty(channelType_nsp1_MISC{i})
+        channelType_nsp1_all{i} = 'MISC';
+    elseif ~isempty(channelType_nsp1_SEEG{i})
+        channelType_nsp1_all{i} = 'SEEG';
+    else 
+        channelType_nsp1_all{i} = 'TRIG';
+    end
+end
+scalpIndxLogical_nsp1=ismember(1:numel(channelNames_nsp1),scalpIndex_nsp1); 
 
 
 % repeat for NSP2
 % categorizing each channel name into a group (SEEG,EEG,EOC,EMG,ECG,MISC,TRIG)
 if ~isempty(filenameNS3_nsp2)
-    channelType_nsp2_SEEG = ~cellfun('isempty', regexp(channelNames_nsp2, ...
-    '^(L|R)[A-Za-z]+[-]?[A-Za-z]*\d+$','once'));
-    channelType_nsp2_EEG = ~cellfun('isempty', regexp(channelNames_nsp2, '^[FTOCPS].*(\d|Z)$','once'));
-    channelType_nsp2_EOC = ~cellfun('isempty', regexp(channelNames_nsp2, '^(L|R)OC$','once'));
-    channelType_nsp2_EMG = ~cellfun('isempty', regexp(channelNames_nsp2, '^EMG','once'));
-    channelType_nsp2_ECG = ~cellfun('isempty', regexp(channelNames_nsp2, '(EKG|Pulse)','once'));
-    channelType_nsp2_MISC = ~cellfun('isempty', regexp(channelNames_nsp2, '(RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%)','once'));
-    channelType_nsp2_TRIG = ~cellfun('isempty', regexp(channelNames_nsp2, 'trigger','once','ignorecase'));
+    channelType_nsp2_SEEG = regexp(channelNames_nsp2,'^(L|R)[a-zA-Z]{1,3}[-]?[a-zA-Z]{0,3}\d{1,2}$');
+    channelType_nsp2_EEG = regexp(channelNames_nsp2, '^[FTOCPS].{0,}[\dZzIiAaRrEeTt]$');
+    channelType_nsp2_EOC = regexp(channelNames_nsp2, '^(L|R)OC$');
+    channelType_nsp2_EMG = regexp(channelNames_nsp2, '^EMG');
+    channelType_nsp2_ECG = regexp(channelNames_nsp2, '(^EKG|Pulse)');
+    channelType_nsp2_MISC = regexp(channelNames_nsp2, '(^RESP|chan|empty|broke|BLANK|BLA1|1\d{2,}%|^\s*$)');
+    channelType_nsp2_TRIG = regexp(channelNames_nsp2, '(trigger|^TRIG8|^SYNC9)','ignorecase');
     scalpIndex_nsp2 = [];
     scalpCounter_nsp2 = 1;
-
-    channelType_nsp2_all = repmat("UNKNOWN", size(channelNames_nsp2));
-
-    channelType_nsp2_all(channelType_nsp2_TRIG) = "TRIG";
-    channelType_nsp2_all(channelType_nsp2_EEG)  = "EEG";
-    channelType_nsp2_all(channelType_nsp2_EOC)  = "EOC";
-    channelType_nsp2_all(channelType_nsp2_EMG)  = "EMG";
-    channelType_nsp2_all(channelType_nsp2_ECG)  = "ECG";
-    channelType_nsp2_all(channelType_nsp2_MISC) = "MISC";
-    channelType_nsp2_all(channelType_nsp2_SEEG) = "SEEG";
-
-    scalpIndxLogical_nsp2 = channelType_nsp2_all=="EEG" | channelType_nsp2_all=="EOC";
+    
+    % creating cell with channel types to use in tsv 
+    channelType_nsp2_all = cell(size(channelNames_nsp2));
+    for i = 1:size(channelNames_nsp2)
+        if ~isempty(channelType_nsp2_TRIG{i})
+            channelType_nsp2_all{i} = 'TRIG';
+        elseif ~isempty(channelType_nsp2_EEG{i})
+            channelType_nsp2_all{i} = 'EEG';
+            scalpIndex_nsp2(scalpCounter_nsp2) = i; % getting scalp channels
+            scalpCounter_nsp2 = scalpCounter_nsp2 + 1;
+        elseif ~isempty(channelType_nsp2_EOC{i})
+            channelType_nsp2_all{i} = 'EOC';
+            scalpIndex_nsp1(scalpCounter_nsp1) = i;
+            scalpCounter_nsp1 = scalpCounter_nsp1 + 1;
+        elseif ~isempty(channelType_nsp2_EMG{i})
+            channelType_nsp2_all{i} = 'EMG';
+        elseif ~isempty(channelType_nsp2_ECG{i})
+            channelType_nsp2_all{i} = 'ECG';
+        elseif ~isempty(channelType_nsp2_MISC{i})
+            channelType_nsp2_all{i} = 'MISC';
+        elseif ~isempty(channelType_nsp2_SEEG{i})
+            channelType_nsp2_all{i} = 'SEEG';
+        else 
+            channelType_nsp2_all{i} = 'TRIG';
+        end
+    end
+    scalpIndxLogical_nsp2=ismember(1:numel(channelNames_nsp2),scalpIndex_nsp2); 
 end
 
 %% get voltage unit in each channel 
@@ -134,23 +165,24 @@ if ~isempty(filenameNS3_nsp2)
 end
 
 %% get channel groups (electrode, scalp, trigger, etc)
-% channelGroup_nsp1_all = cell(size(channelNames_nsp1));
-% for i = 1:size(channelNames_nsp1,1)
-%     if ~isempty(channelType_nsp1_SEEG{i})
-%       channelGroup_nsp1_all{i} = regexp(channelNames_nsp1{i}, '^(L|R)[a-zA-Z]{2,3}','match');
-%     else
-%       channelGroup_nsp1_all{i} = channelNames_nsp1{i};
-%     end
-% end
-channelGroup_nsp1_all = channelNames_nsp1;  % default = full name
-idx = channelType_nsp1_SEEG;
-channelGroup_nsp1_all(idx) = regexprep(channelNames_nsp1(idx), '\d+$', '');
-
+channelGroup_nsp1_all = cell(size(channelNames_nsp1));
+for i = 1:size(channelNames_nsp1,1)
+    if ~isempty(channelType_nsp1_SEEG{i})
+      channelGroup_nsp1_all{i} = regexp(channelNames_nsp1{i}, '^(L|R)[a-zA-Z]{2,3}','match');
+    else
+      channelGroup_nsp1_all{i} = channelNames_nsp1{i};
+    end
+end
 
 if ~isempty(filenameNS3_nsp2)
-    channelGroup_nsp2_all = channelNames_nsp2;  % default = full name
-    idx = channelType_nsp2_SEEG;
-    channelGroup_nsp2_all(idx) = regexprep(channelNames_nsp2(idx), '\d+$', '');
+    channelGroup_nsp2_all = cell(size(channelNames_nsp2));
+    for i = 1:size(channelNames_nsp2,1)
+        if ~isempty(channelType_nsp2_SEEG{i})
+          channelGroup_nsp2_all{i} = regexp(channelNames_nsp2{i}, '^(L|R)[a-zA-Z]{2,3}','match');
+        else
+          channelGroup_nsp2_all{i} = channelNames_nsp2{i};
+        end
+    end
 end
 
 %% OPTIONAL
@@ -275,19 +307,18 @@ end
 %% saving hdr info needed for other functions
 % nsp1    
 hdrNS3_nsp1.hdr.Fs = samplingFrequency_nsp1;    % sampling frequency
-% hdrNS3_nsp1.hdr.nChans = headerNS3_nsp1.MetaTags.ChannelCount-scalpCounter_nsp1; %  number of channels
-hdrNS3_nsp1.hdr.nChans = headerNS3_nsp1.MetaTags.ChannelCount; %  number of channels
-hdrNS3_nsp1.hdr.label = channelNames_nsp1;     % channel name 
+hdrNS3_nsp1.hdr.nChans = headerNS3_nsp1.MetaTags.ChannelCount-scalpCounter_nsp1; %  number of channels
+hdrNS3_nsp1.hdr.label = channelNames_nsp1;     % channel name (eg. RAMY1)
 hdrNS3_nsp1.hdr.nSamples = headerNS3_nsp1.MetaTags.DataPoints;    % number of samples
-hdrNS3_nsp1.hdr.chantype = cellstr(channelType_nsp1_all); % channel types
+hdrNS3_nsp1.hdr.chantype = channelType_nsp1_all; % channel types
 hdrNS3_nsp1.hdr.chanunit = cellstr(units_nsp1); % recording voltage units
 % nsp2
 if ~isempty(filenameNS3_nsp2)
     hdrNS3_nsp2.hdr.Fs = samplingFrequency_nsp2; 
-    hdrNS3_nsp2.hdr.nChans = headerNS3_nsp2.MetaTags.ChannelCount; 
+    hdrNS3_nsp2.hdr.nChans = headerNS3_nsp2.MetaTags.ChannelCount-scalpCounter_nsp2; 
     hdrNS3_nsp2.hdr.label = channelNames_nsp2; 
     hdrNS3_nsp2.hdr.nSamples = headerNS3_nsp2.MetaTags.DataPoints; 
-    hdrNS3_nsp2.hdr.chantype = cellstr(channelType_nsp2_all); 
+    hdrNS3_nsp2.hdr.chantype = channelType_nsp2_all; 
     hdrNS3_nsp2.hdr.chanunit = cellstr(units_nsp2); 
 else
     hdrNS3_nsp2 = {};

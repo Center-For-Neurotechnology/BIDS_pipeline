@@ -46,16 +46,16 @@ hdrn.hdr.nTrials = 1;
 % 
 
 %% get continuous recordings
-% hdrn.label(strcmp(hdrn.label, 'SYNC')) = [];
+hdrn.label(strcmp(hdrn.label, 'SYNC')) = [];
 nChannels = numel(hdrn.label);
 iChToExclude=[];
 [filepath,name,ext] = fileparts(foldername_neuralynx);
 for iCh=1:nChannels
-    %ncsFileName =[dirData,filesep,hdr.label{iCh},'.ncs']; %'CSC',num2str(iCh)
+%     ncsFileName =[dirData,filesep,hdr.label{iCh},'.ncs']; %'CSC',num2str(iCh)
     ncsFileName = [filepath,'\',hdrn.label{iCh},posFixNCS,'.ncs'];
     [Timestamps, ChannelNumbers, SampleFrequencies, NumberOfValidSamples, Samples, Header] = ...
         Nlx2MatCSC(ncsFileName,[1 1 1 1 1], 1, 1, [] );
-    if length(unique(ChannelNumbers))==1 && length(unique(SampleFrequencies))
+    if length(unique(ChannelNumbers))==1 && length(unique(SampleFrequencies))   
         dataValuesInt(:,iCh) = Samples(:); % assumes all the same size!
     else
         iChToExclude = [iChToExclude, iCh];
@@ -99,12 +99,6 @@ hdrn.trial{1} = data;
 hdrData = ft_fetch_header(hdrn);
 
 
-% hdrData.orig.edf = struct();
-% % Insert start date/time as cell arrays
-% hdrData.orig.edf.startdate = datestr(dt,'dd.mm.yy');
-% hdrData.orig.edf.starttime = datestr(dt,'HH.MM.SS');
-% disp(hdrData.orig.edf.startdate)
-% disp(hdrData.orig.edf.starttime)
 % % save the files
 ft_write_data(filename_IEEGn, hdrn.trial{1}, 'header', hdrData, 'dataformat', 'edf'); % edf file
 

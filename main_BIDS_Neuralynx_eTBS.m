@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
 directoryBIDS = 'D:\krishma\BIDS_pipeline'; 
-sub_XXXX = 'sub-209'; % the deidentified patient ID
+sub_XXXX = 'sub-6j9a'; % the deidentified patient ID
 
 
 %% add fieldtrip
@@ -20,7 +20,7 @@ ft_defaults
 % create a json file with a coordinate system in which electrode positions are expressed
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_coordsystem.json
 % post MRI file should already be in the BIDS directory: directoryBIDS/sub_XXXX/ses-postimp/anat/sub-XXXX_ses-postimp_acq-CT_run-01_T1w.nii
-filename_MRI = 'sub-209_ses-postimp_acq-CT_run-01_T1w.nii'; % will not be used to open a file, just as a string in the json file
+filename_MRI = 'sub-6j9a_ses-postimp_acq-CT_run-01_T1w.nii'; % will not be used to open a file, just as a string in the json file
 perParticipantCoordsystemJSON(sub_XXXX, filename_MRI, directoryBIDS)
 
 %% _T1w.json
@@ -35,7 +35,7 @@ perParticipantImageJSON(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'D:\krishma\mainpipeline_analysis\MG209revised\MG209revised_ElectrodeInfo_RAS.xlsx';
+filename_RAS = 'O:\ElectrodeLocalizations\thalamicMapping\MG95c\MG95c_SurferOutput\MG95c_ElectrodeInfo_RAS.xlsx';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
@@ -44,10 +44,10 @@ perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 % create a tsv file containing additional descriptions of the channels
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
 taskName = 'eTBS';
-ieeg_run = '03'; % BIDS stim session number for this participant
-posFixNCS = '_0008_9_combined'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
+ieeg_run = '01'; % BIDS stim session number for this participant
+posFixNCS = '_0001_2_combined'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
 badChannels = ''; % assuming empty for now, can write a script to make this mat file later if needed
-foldername_neuralynx = 'K:\StimDataBackup\Data_Stimulation\MG209revised\eTBS\Neuralynx\_0008_0009\combined\CSC289_0008_9_combined.ncs'; % path to any .ncs file in the session's data folder IMPORTANT: include the .ncs file name!
+foldername_neuralynx = 'K:\StimDataBackup\Data_Stimulation\MG95c\eTBS\RawData\_0001\combined\C3_0001_2_combined.ncs'; % path to any .ncs file in the session's data folder IMPORTANT: include the .ncs file name!
 [hdrn] = perSessionChannelsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,badChannels,posFixNCS);
 
 
@@ -68,9 +68,9 @@ channInfo.bankInfo.bankA = 33:64; % Which Neuralynx channels correspond to each 
 channInfo.bankInfo.bankB = 65:96;
 channInfo.bankInfo.bankC = 129:160;
 
-filename_chanListEMU = 'D:\krishma\mainpipeline_analysis\MG209revised\MG209revised_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
-logFileDirectory = 'K:\StimDataBackup\Data_Stimulation\MG209revised\eTBS\Logfiles\'; % updated cerestim log file format
-stimChNames = 'CSC289'; % SYNC channel at CSC289
+filename_chanListEMU = 'T:\Original Data\MG\MG95c\MG95c_Notes_and_Images\MG95c_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
+logFileDirectory = 'K:\StimDataBackup\Data_Stimulation\MG95c\eTBS\Logfiles\'; % updated cerestim log file format
+stimChNames = 'CSC300'; % SYNC channel at CSC289
 perSessionEventsTSVn_eTBS(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,...
     channInfo,logFileDirectory,hdrn,stimChNames,posFixNCS,filename_chanListEMU,startNSxSec,endNSxSec)
 

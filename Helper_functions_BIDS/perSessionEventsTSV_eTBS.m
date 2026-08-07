@@ -132,7 +132,7 @@ timeInfo.endNSxSec = [];
 
 dirResults = '';
 %AINP STIM Channel
-stimAINPChNames = {'ainp9'};%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
+stimAINPChNames = {'SYNC9'};%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
  
 % Find channel names
 channInfo = findChannelNamesInNSxBIDS(channInfo, [], fileNameNSxPerNSP); 
@@ -144,49 +144,45 @@ titName = 'bids';
 
 %% Sort stim event times into nsp1 or nsp2 file
 % new stim arrays
+% new stim arrays
 stimTimeON_nsp1 = [];
-if ~isempty(filenameNSx_nsp2)
-    stimTimeON_nsp2 = [];
-end
+stimTimeON_nsp2 = [];
 
-% stimIndStart 
-nStimTXT  = size(stimLogNSPs,1);
-nStimNSP1 = length(indTimeSTIMPerFile{1,1});
+% how many stims did each NSP actually detect
+nStimTXT   = size(stimLogNSPs,1);                 % log count
+nStimNSP1  = numel(indTimeSTIMPerFile{1,1});
+hasStimNsp1 = nStimNSP1 > 0;
 
 if ~isempty(filenameNSx_nsp2)
-    nStimNSP2 = length(indTimeSTIMPerFile{1,2});
-    nStim = min([nStimTXT, nStimNSP1, nStimNSP2]);
+    nStimNSP2   = numel(indTimeSTIMPerFile{1,2});
+    hasStimNsp2 = nStimNSP2 > 0;
 else
-    nStim = min([nStimTXT, nStimNSP1]);
+    nStimNSP2   = 0;
+    hasStimNsp2 = false;
 end
 
-stimTimeON_nsp1 = zeros(nStim,1);
-if ~isempty(filenameNSx_nsp2)
-    stimTimeON_nsp2 = zeros(nStim,1);
-end
+% cap the log count by whichever NSP(s) actually recorded stim (ignore a 0-pulse NSP)
+detectedCounts = [];
+if hasStimNsp1, detectedCounts(end+1) = nStimNSP1; end
+if hasStimNsp2, detectedCounts(end+1) = nStimNSP2; end
+nStim = min([nStimTXT, detectedCounts]);
 
+% fill per-NSP onset index arrays (only for NSPs that have stim)
+if hasStimNsp1, stimTimeON_nsp1 = zeros(nStim,1); end
+if hasStimNsp2, stimTimeON_nsp2 = zeros(nStim,1); end
 for i = 1:nStim
-    stimTimeON_nsp1(i) = indTimeSTIMPerFile{1,1}(i);
-    if ~isempty(filenameNSx_nsp2)
-        stimTimeON_nsp2(i) = indTimeSTIMPerFile{1,2}(i);
-    end
-end
-% % adding stim index to per nsp arrays
-% for i = 1:size(stimLogNSPs,1)
-%     stimTimeON_nsp1(i,1) = indTimeSTIMPerFile{1,1}(i);
-%     if ~isempty(filenameNSx_nsp2)
-%         stimTimeON_nsp2(i,1) = indTimeSTIMPerFile{1,2}(i);    
-%     end
-% end
-
-stimTimeON_nsp1 = stimTimeON_nsp1/hdrNS3_nsp1.hdr.Fs{1}; % converting time from index number to seconds (sec = index/sampling rate)
-if ~isempty(filenameNSx_nsp2)
-    stimTimeON_nsp2 = stimTimeON_nsp2/hdrNS3_nsp2.hdr.Fs{1};
+    if hasStimNsp1, stimTimeON_nsp1(i) = indTimeSTIMPerFile{1,1}(i); end
+    if hasStimNsp2, stimTimeON_nsp2(i) = indTimeSTIMPerFile{1,2}(i); end
 end
 
-stimTimeOFF_nsp1 = stimTimeON_nsp1+stimParameters.stimPulseDuration;
-if ~isempty(filenameNSx_nsp2)
-    stimTimeOFF_nsp2 = stimTimeON_nsp2+stimParameters.stimPulseDuration;
+% convert index -> seconds, then compute OFF = ON + pulse duration
+if hasStimNsp1
+    stimTimeON_nsp1  = stimTimeON_nsp1 / hdrNS3_nsp1.hdr.Fs{1};
+    stimTimeOFF_nsp1 = stimTimeON_nsp1 + stimParameters.stimPulseDuration;
+end
+if hasStimNsp2
+    stimTimeON_nsp2  = stimTimeON_nsp2 / hdrNS3_nsp2.hdr.Fs{1};
+    stimTimeOFF_nsp2 = stimTimeON_nsp2 + stimParameters.stimPulseDuration;
 end
 
 %% set up table vars    

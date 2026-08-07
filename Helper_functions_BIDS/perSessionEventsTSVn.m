@@ -58,11 +58,6 @@ stimLogChannels = stimLogChannels.stimchans(:,2:3); % works for single site (2 c
 % map cerestim stim channnels (from log files) to neuralynx recording channel numbers
 cerestimChsInNeuralynxChs = zeros(size(stimLogChannels));
 
-% cerstim to neuralynx transform
-% % below lines were addded for debugging
-% channInfo.bankInfo.bankA = 33:64; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
-% channInfo.bankInfo.bankB = 65:96;
-% channInfo.bankInfo.bankC = 129:160;
 
 for i = 1:size(stimLogChannels,1)
     for j = 1:size(stimLogChannels,2)
@@ -84,85 +79,38 @@ chanListEMU = reshape(chanListEMU,[],1);
 
 %% getting the stim site channel labels
 stimBipolarSites = cell(size(cerestimChsInNeuralynxChs)); % saving stim channel info: {chName1-chName2, chNumber1, ch1NSP, chNumber2 ch2NSP} don't need ind=3,5
+%% build per-event bipolar site names + channel numbers
 for i = 1:size(cerestimChsInNeuralynxChs,1)
-%     if stimLogChannelsNSP(i,1) <= 128 % have the stim channel numbers, sorting into nsp1 or nsp2 file % nsp doesn't matter anymore
-        stim_ch1 = chanListEMU(cerestimChsInNeuralynxChs(i,1)); % ch name string % instead of hdrn.label, use the xcel ch list
-%         stimBipolarSites{i,3} = 1;
-%     else
-%         stim_ch1 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,1)-128);
-%         stimBipolarSites{i,3} = 2;
-%     end
-%     if stimLogChannelsNSP(i,2) <= 128
-        stim_ch2 = chanListEMU(cerestimChsInNeuralynxChs(i,2)); % stim channels can be in different nsps
-%         stimBipolarSites{i,5} = 1;
-%     else
-%         stim_ch2 = hdrNS3_nsp2.hdr.label(stimLogChannelsNSP(i,2)-128);
-%         stimBipolarSites{i,5} = 2;
-%     end
-    stimBipolarSites{i,1} = join([stim_ch1 stim_ch2],'-');
-    stimBipolarSites{i,2} = cerestimChsInNeuralynxChs(i,1); % stim_ch1 number;
-    stimBipolarSites{i,3} = cerestimChsInNeuralynxChs(i,2); % stim_ch2 number;
+    % NSP no longer matters — look up names directly from the Excel channel list
+    stim_ch1 = chanListEMU{cerestimChsInNeuralynxChs(i,1)};   % braces -> the name string
+    stim_ch2 = chanListEMU{cerestimChsInNeuralynxChs(i,2)};
+
+    stimBipolarSites{i,1} = sprintf('%s-%s', stim_ch1, stim_ch2);   % 'ch1-ch2'
+    stimBipolarSites{i,2} = cerestimChsInNeuralynxChs(i,1);         % stim_ch1 number
+    stimBipolarSites{i,3} = cerestimChsInNeuralynxChs(i,2);         % stim_ch2 number
 end
 
-% creating 'electrical_stimulation_trial_type' from existing variables
-% 'Bipolar Single Pulse stim, channels: LTB_10-LTB_11, current: 7 mA, stimulation duration: 0.233 ms, frequency: 0 Hz'
+%% creating 'electrical_stimulation_trial_type'
+% e.g. 'Bipolar Single Pulse stim, channels: LTB_10-LTB_11, current: 7 mA, stimulation duration: 0.233 ms, frequency: 0 Hz'
 stimTrialType = {};
-part1 = join(string([stimParameters.stim_type{1},'Single Pulse stim']),' ');
-part3 = join(string(['current:', string(stimParameters.stimCurrent), 'mA']),' ');
-part4 = join(string(['stimulation duration:', string(stimParameters.stimPulseDuration), 'ms']),' ');
-part5 = join(string(['frequency:', string(stimParameters.stimFrequency), 'Hz']),' ');
-
+part1 = sprintf('%s Single Pulse stim', stimParameters.stim_type{1});
+part3 = sprintf('current: %s mA', string(stimParameters.stimCurrent));
+part4 = sprintf('stimulation duration: %s ms', string(stimParameters.stimPulseDuration));
+part5 = sprintf('frequency: %s Hz', string(stimParameters.stimFrequency));
 for i = 1:size(stimBipolarSites,1) % both onset_sec and stimBipolarSites should be the same length/size
-    part2 = join(['channels:', stimBipolarSites{i}],' ');
-    stimTrialType{i,1} = join([part1,part2,part3,part4,part5],', ');    
+    part2 = sprintf('channels: %s', stimBipolarSites{i,1});
+    stimTrialType{i,1} = strjoin({part1,part2,part3,part4,part5}, ', ');
 end
-
 
 %% Get stim info
 
-% read stim AINP data to create epochs
+
 [filepath,~,~] = fileparts(foldername_neuralynx);
-ncsFileName = filepath; %,'\',stimChNames{i},posFixNCS,'.ncs'];
-[stimData,chNumberSTIM, chNamesSTIM, hdrStim] =  readCSCfiles(ncsFileName, stimChNames, posFixNCS, 0); % it is NEGATIVE!
-% we might need to accomodate differnt sampling rates!
-if hdrStim.Fs ~= hdrn.Fs 
-    stimData = downsample(stimData, round(hdrStim.Fs / hdrn.Fs)); % assuming multiples! - no need for LP filtering because this is only to get stim timing
-end
-
-
-if isempty(startNSxSec), startNSxSec=0; end
-if isempty(endNSxSec), endNSxSec=size(stimData,2)/hdr.Fs; end
-indSamplesOfInterest = round(startNSxSec*hdrn.Fs+1): min(round(endNSxSec*hdrn.Fs),size(stimData,1));
-indSamplesOfInterestStim = intersect(indSamplesOfInterest, 1:length(stimData));
-dataStim{1} = abs(stimData(indSamplesOfInterestStim))';
-%dataStim{1} = abs(stimData)';
-
-thPulse = min(10, max([dataStim{1}])/3); % 1/3 of the max or 300mV DIFF
-
-indTimeAllSTIMPulses = find(abs(diff([mean([dataStim{1}]) dataStim{1}])) >= thPulse); % Find all STIM pulses
-
-% Detect pulses on analog inputs from NSP data
-minDistSTIMPulses = 50; % 25ms minimum distance between pulse - to aviod several hits
-if length(minDistSTIMPulses)>=1 && minDistSTIMPulses(1)>0
-    indRepeatedPulses = find(diff([ 0 indTimeAllSTIMPulses])< minDistSTIMPulses(1));
-    indTimeAllSTIMPulses(indRepeatedPulses) = [];% Get only first point of the pulse or train - remove subsequent points
-end
-
-% indTimeAllSTIMPulses = indTimeAllSTIMPulses(1:size(stimLogChannels,1));
-
-indTimeAllSTIM = indTimeAllSTIMPulses;
-hdrn.hdrStim = hdrStim;
-hdrn.stimFs = hdrStim.Fs;
-hdrn.stimChNumber = chNumberSTIM;
-hdrn.stimChName = chNamesSTIM;
-% % 
-% % dirNeuraLynxData = [ncsFileName,filesep,stimChNames,'.nsc'];
-% % selChNames = hdrn.label{1:4}
-% % selBipolar = '';
-% % minDistSTIMPulses = 50; 
-% % [~, ~, dataStim, indTimeAllSTIM, ~, ~, ~, hdr] = GetBipolarEEGFromNeuralynx(ncsFileName, posFixNCS, selChNames, selBipolar, stimChNames, 0, [], minDistSTIMPulses);
-
-
+dirData = filepath;
+minDistSTIMPulses = 50;
+[~, ~, dataStim, indTimeAllSTIM, ~, ~, allChNames, hdrn] = GetBipolarEEGFromNeuralynx32(posFixNCS, '', dirData, filename_chanListEMU, [], [], stimChNames, startNSxSec, endNSxSec, minDistSTIMPulses);
+% [~, ~, ~, indTimeAllSTIM,  allChNames,hdr,~] = scriptCheckStimInNeuralynx(posFixNCS, '', dirRawData, filename_chanListEMU, [], [], stimChNames, channInfo,[], startNSxSec, endNSxSec);
+indTimeAllSTIM = indTimeAllSTIM{1};   % unwrap to match your old variable shape
 
 %% Get stim pulse start and end time
 % new stim arrays

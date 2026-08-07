@@ -1,8 +1,16 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
 % pName = MG95c
-directoryBIDS = 'D:\krishma\BIDS_pipeline'; 
-sub_XXXX = 'sub-6j9a'; % the deidentified patient ID
+directoryBIDS = 'K:\BIDsified_StimData_EMU'; 
+sub_XXXX = 'sub-2v8e'; % MG225
+
+subjDir = fullfile(directoryBIDS, sub_XXXX);
+if ~isfolder(subjDir)
+    % create the full subfolder structure
+    mkdir(fullfile(subjDir, 'ses-postimp', 'ieeg'));
+    mkdir(fullfile(subjDir, 'ses-postimp', 'anat'));
+    mkdir(fullfile(subjDir, 'ses-preimp',  'anat'));
+end
 
 %% images (PLACEHOLDER, waiting for new MRI pipeline)
 % filename_MRI = perParticipantImageNII(sub_XXXX, filename_MRI, directoryBIDS) 
@@ -28,7 +36,7 @@ sub_XXXX = 'sub-6j9a'; % the deidentified patient ID
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'O:\ElectrodeLocalizations\thalamicMapping\MG95c\MG95c_SurferOutput\MG95c_RAS_Electrode_Parc.csv';
+filename_RAS = 'K:\StimDataBackup\Data_Stimulation\MG225\preprocessed_results\MG225_RAS_Electrode_Parc.csv';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
@@ -36,11 +44,11 @@ perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 %% _channels.tsv
 % create a tsv file containing additional descriptions of the channels
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
-taskName = 'ClosedLoop_NYX_SYNC_711am';
-ieeg_run = '12'; % BIDS stim session number for this participant
-posFixNCS = '_0012'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
+taskName = 'ThalamicNetwork';
+ieeg_run = '01'; % BIDS stim session number for this participant
+posFixNCS = ''; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
 badChannels = ''; % assuming empty for now, can write a script to make this mat file later if needed
-foldername_neuralynx = 'T:\Original Data\MG\MG95c\MG95C_Closed_and_open_loop\Neuralynx\d9_18-22-21\SYNC\SYNC_0012.ncs'; 
+foldername_neuralynx = 'K:\StimDataBackup\Data_Stimulation\MG225\ThalamicNet\rawData\C3.ncs'; 
 [hdrn] = perSessionChannelsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,badChannels,posFixNCS);
 
 
@@ -57,18 +65,18 @@ perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hd
 % % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.tsv
 % Stimulation Parameters
 stimParameters.stimPulseDuration = 0.233; % in mS
-stimParameters.stimFrequency = 0; % in Hz
+stimParameters.stimFrequency = 100; % in Hz
 stimParameters.stimCurrent = 7; % in mA;
 stimParameters.stim_type = {'Bipolar','biphasic'};
-channInfo.bankInfo.bankA = 1:32; % Which Neuralynx channels correspond to each Cerestim bank [cerestim bank->neuralynx channel]
-channInfo.bankInfo.bankB = 33:64;
-channInfo.bankInfo.bankC = 65:96;
-% TMS Paramters 
-% tmsTarget, tmsHemisphere, tmsNoise, tmsVolAudio, tmsEyes, tmsIntensity,
-% tmsNbs, tmsPulses, tmsComments 
-filename_chanListEMU = 'D:\krishma\mainpipeline_analysis\MG226\MG226_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
-fileNameStimSites = 'E:\BIDStesting\local_data\MG200\NetworkSweepBipolChans-06_09-55-08.mat'; % updated cerestim logfile format
+channInfo.bankInfo.bankA =   1:32;
+channInfo.bankInfo.bankB =   97:128; 
+channInfo.bankInfo.bankC =   129:160; 
+
+filename_chanListEMU = 'K:\StimDataBackup\Data_Stimulation\MG225\preprocessed_results\MG225_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
+fileNameStimSites = 'K:\StimDataBackup\Data_Stimulation\MG225\ThalamicNet\Logfiles\NetworkSweepBipolChans-16-Aug-2025_17-51-13.mat'; % updated cerestim logfile format
 stimChNames = 'SYNC'; % SYNC channel at CSC289
+startNSxSec= 1.22*10^6/2000; %if all file: 0 % 0.00*10^x/2000
+endNSxSec = 4.93*10^6/2000; %if all file:[]
 perSessionEventsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,...
     channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS,filename_chanListEMU,startNSxSec,endNSxSec)
 % 
