@@ -40,8 +40,10 @@ HED = 'n/a';
 cerestimAllBanks = [channInfo.bankInfo.bankANSP; channInfo.bankInfo.bankBNSP; channInfo.bankInfo.bankCNSP];
 stStimSites = load(fileNameStimSites);
 % stimLogChannels = stimLogChannels.stimchans(:,2:3); % works for single site (2 channels) stim
-stimCh1=unique(stStimSites.stimchans(:,2)); % in the new log files stimchans contains ALL the parameters information 
-stimCh2=unique(stStimSites.stimchans(:,3));
+% stimCh1=unique(stStimSites.stimchans(:,2)); % in the new log files stimchans contains ALL the parameters information 
+% stimCh2=unique(stStimSites.stimchans(:,3));
+stimCh1=unique(stStimSites.stimchans(:,1)); % old log files stimchans contains only chan and trial information 
+stimCh2=unique(stStimSites.stimchans(:,2));
 
 % STIMULATION CHANNELS
 nStim = length(stimCh1);
@@ -209,7 +211,8 @@ if ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2)
     stimTimeOFF_nsp2 = stimTimeON_nsp2+stimParameters.stimPulseDuration;
 end
 % map each event to its unique pair (order-independent match, validated: no zeros)
-eventChans  = sort(stStimSites.stimchans(:, 2:3), 2);
+%eventChans  = sort(stStimSites.stimchans(:, 2:3), 2); %new logfile config
+eventChans  = sort(stStimSites.stimchans(:, 1:2), 2); %old logfile config
 uniquePairs = sort(channInfo.stimChNumber', 2);
 [~, pairIdxPerEvent] = ismember(eventChans, uniquePairs, 'rows');% map each event to its unique pair (order-independent match, validated: no zeros)
 

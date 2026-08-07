@@ -1,8 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
-<<<<<<< HEAD
-directoryBIDS = 'K:\BIDsified_StimData_EMU'; 
-sub_XXXX = 'sub-8u1w'; % MG249
+directoryBIDS = 'J:\BIDsified_StimData_EMU'; 
+sub_XXXX = 'sub-9d4z'; % MG176
 
 subjDir = fullfile(directoryBIDS, sub_XXXX);
 if ~isfolder(subjDir)
@@ -11,11 +10,6 @@ if ~isfolder(subjDir)
     mkdir(fullfile(subjDir, 'ses-postimp', 'anat'));
     mkdir(fullfile(subjDir, 'ses-preimp',  'anat'));
 end
-=======
-% subj - MG237
-directoryBIDS = ''; 
-sub_XXXX = 'sub-8s7o'; % the deidentified patient ID
->>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 
 % % images (PLACEHOLDER, waiting for new MRI pipeline)
 % filename_MRI = perParticipantImageNII(sub_XXXX, filename_MRI, directoryBIDS) 
@@ -41,28 +35,19 @@ sub_XXXX = 'sub-8s7o'; % the deidentified patient ID
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-<<<<<<< HEAD
-filename_RAS = 'K:\StimDataBackup\Data_Stimulation\MG227\preprocessed_results\MG227_RAS_Electrode_Parc.csv'; %need to add good/bad channels column
-=======
-filename_RAS = ''; %need to add good/bad channels column
->>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
+filename_RAS = 'O:\ElectrodeLocalizations\thalamicMapping\MG176\MG176_SurferOutput\MG176_RAS_Electrode_Parc.csv'; %Jane2
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 %% per session files
 %% _channels.tsv
 % create a tsv file containing additional descriptions of the channels
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
-taskName = 'NetworkDrowsy2';
-ieeg_run = '02';
+taskName = 'NetworkWake1';
+ieeg_run = '01';
 badChannels_nsp1 = ''; % assuming empty for now, can write a script to make this mat file later
 badChannels_nsp2 = '';
-<<<<<<< HEAD
-filenameNS3_nsp1 = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\NSP1\20250918-160701-007.ns3'; % path to nsp1 ns3 
-filenameNS3_nsp2 = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\NSP2\20250918-160702-007.ns3';  % path to nsp2 ns3, leave empty if just using nsp1
-=======
-filenameNS3_nsp1 = ''; % path to nsp1 ns3 
-filenameNS3_nsp2 = '';  % path to nsp2 ns3, leave empty if just using nsp1
->>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
+filenameNS3_nsp1 = 'J:\StimDataBackup\Data_Stimulation\MG176\NetworkWake1\NSP1\05-194100-002.ns3'; % path to nsp1 ns3 
+filenameNS3_nsp2 = 'J:\StimDataBackup\Data_Stimulation\MG176\NetworkWake1\NSP2\05-194058-002.ns3';  % path to nsp2 ns3, leave empty if just using nsp1
 [hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,...
     filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2);
 
@@ -85,19 +70,15 @@ stimParameters.stimCurrent = 7; % in mA;
 stimParameters.stim_type = {'Bipolar','biphasic'};
 
 channInfo.bankInfo.bankA = 1:32;% Which NSX channels correspond to each bank 
-channInfo.bankInfo.bankB = 97:128; % 
+channInfo.bankInfo.bankB = 65:96; % 
 channInfo.bankInfo.bankC = 97:128; % from NSP 1
 channInfo.bankInfo.bankANSP = 1;% Which NSP (1 or 2) correspond to each bank 
 channInfo.bankInfo.bankBNSP = 1;
-channInfo.bankInfo.bankCNSP = 2;
-<<<<<<< HEAD
+channInfo.bankInfo.bankCNSP = 1;
 timeInfo.startNSxSec= 0; 
 timeInfo.endNSxSec = []; 
-fileNameStimSites = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\Logfiles\NetworkSweepBipolChans-18-Sep-2025_17-00-34.mat';
+fileNameStimSites = 'J:\StimDataBackup\Data_Stimulation\MG176\NetworkWake1\NetworkSweepReverseBipolChans-05_19-54-54.mat';
 stimainp = {'SYNC'};
-=======
-fileNameStimSites = '';
->>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,stimParameters,...
     channInfo,fileNameStimSites,hdrNS3_nsp1,hdrNS3_nsp2, stimainp, timeInfo.startNSxSec, timeInfo.endNSxSec);
 % % 
