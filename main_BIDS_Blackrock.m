@@ -1,5 +1,6 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
+<<<<<<< HEAD
 directoryBIDS = 'K:\BIDsified_StimData_EMU'; 
 sub_XXXX = 'sub-8u1w'; % MG249
 
@@ -10,6 +11,11 @@ if ~isfolder(subjDir)
     mkdir(fullfile(subjDir, 'ses-postimp', 'anat'));
     mkdir(fullfile(subjDir, 'ses-preimp',  'anat'));
 end
+=======
+% subj - MG237
+directoryBIDS = ''; 
+sub_XXXX = 'sub-8s7o'; % the deidentified patient ID
+>>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 
 % % images (PLACEHOLDER, waiting for new MRI pipeline)
 % filename_MRI = perParticipantImageNII(sub_XXXX, filename_MRI, directoryBIDS) 
@@ -35,7 +41,11 @@ end
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
+<<<<<<< HEAD
 filename_RAS = 'K:\StimDataBackup\Data_Stimulation\MG227\preprocessed_results\MG227_RAS_Electrode_Parc.csv'; %need to add good/bad channels column
+=======
+filename_RAS = ''; %need to add good/bad channels column
+>>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 %% per session files
@@ -46,8 +56,13 @@ taskName = 'NetworkDrowsy2';
 ieeg_run = '02';
 badChannels_nsp1 = ''; % assuming empty for now, can write a script to make this mat file later
 badChannels_nsp2 = '';
+<<<<<<< HEAD
 filenameNS3_nsp1 = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\NSP1\20250918-160701-007.ns3'; % path to nsp1 ns3 
 filenameNS3_nsp2 = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\NSP2\20250918-160702-007.ns3';  % path to nsp2 ns3, leave empty if just using nsp1
+=======
+filenameNS3_nsp1 = ''; % path to nsp1 ns3 
+filenameNS3_nsp2 = '';  % path to nsp2 ns3, leave empty if just using nsp1
+>>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 [hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,...
     filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2);
 
@@ -75,10 +90,14 @@ channInfo.bankInfo.bankC = 97:128; % from NSP 1
 channInfo.bankInfo.bankANSP = 1;% Which NSP (1 or 2) correspond to each bank 
 channInfo.bankInfo.bankBNSP = 1;
 channInfo.bankInfo.bankCNSP = 2;
+<<<<<<< HEAD
 timeInfo.startNSxSec= 0; 
 timeInfo.endNSxSec = []; 
 fileNameStimSites = 'K:\StimDataBackup\Data_Stimulation\MG227\Network2_Wake_Drowsy\Logfiles\NetworkSweepBipolChans-18-Sep-2025_17-00-34.mat';
 stimainp = {'SYNC'};
+=======
+fileNameStimSites = '';
+>>>>>>> 705c6f007c9be1fbbb5cb7edd0995abf68b820ab
 perSessionEventsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,stimParameters,...
     channInfo,fileNameStimSites,hdrNS3_nsp1,hdrNS3_nsp2, stimainp, timeInfo.startNSxSec, timeInfo.endNSxSec);
 % % 
