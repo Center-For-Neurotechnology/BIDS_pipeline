@@ -1,7 +1,16 @@
- function channInfo = findChannelNamesInNSX(channInfo, allChNames, fileNameNSx)
+function channInfo = findChannelNamesInNSX(channInfo, allChNames, fileNameNSx)
 
 nChannels=length(channInfo.stimChNumber);
 nPreFixName=2;
+
+% --- normalize fileNameNSx: accept string or cell, drop empty NSP entries ---
+if ~iscell(fileNameNSx)
+    fileNameNSx = {fileNameNSx};          % wrap a single filename into a cell
+end
+fileNameNSx = fileNameNSx(~cellfun(@isempty, fileNameNSx));  % remove empty NSPs
+if isempty(fileNameNSx)
+    error('findChannelNamesInNSX: no valid NSX filenames provided.');
+end
 
 if isempty(allChNames) % we might want to change to the same input
     for iNSP=1:length(fileNameNSx)

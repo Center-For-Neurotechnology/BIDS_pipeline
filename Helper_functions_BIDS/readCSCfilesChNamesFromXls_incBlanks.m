@@ -32,10 +32,24 @@ nChannels=length(chNamesFromXls);
 chNumber=[];
 chNames=[];
 dataValuesInt = [];
+% determine expected sample length from the first readable channel
+nSamplesExpected = [];
+for iCh = 1:nChannels
+    ncsFileName = [dirData,filesep,chNamesFromXls{iCh},posFixNCS,'.ncs'];
+    if ~any(isnan(chNamesFromXls{iCh})) && exist(ncsFileName,'file') && ~strcmp(chNamesFromXls{iCh},'LAMY1')
+        [~,~,~,~,Samples,~] = Nlx2MatCSC(ncsFileName,[1 1 1 1 1], 1, 1, []);
+        nSamplesExpected = numel(Samples(:));
+        break;
+    end
+end
+if isempty(nSamplesExpected)
+    error('No readable channels found — cannot determine sample length.');
+end
+
 for iCh=1:nChannels
     ncsFileName =[dirData,filesep,chNamesFromXls{iCh},posFixNCS,'.ncs']; %'CSC',num2str(iCh)
     
-    if ~any(isnan(chNamesFromXls{iCh})) && exist(ncsFileName,'file')
+    if ~any(isnan(chNamesFromXls{iCh})) && exist(ncsFileName,'file') && ~strcmp(chNamesFromXls{iCh},'LAMY1')
         [Timestamps, ChannelNumbers, SampleFrequencies, NumberOfValidSamples, Samples, Header] = ...
             Nlx2MatCSC(ncsFileName,[1 1 1 1 1], 1, 1, [] );
         
@@ -44,11 +58,10 @@ for iCh=1:nChannels
         chNames = [chNames,chNamesFromXls(iCh)];
     else
         chNumber = [chNumber; iCh]; % it is a vector, but should all be the same
-        dataValuesInt = [dataValuesInt, zeros(size(Samples(:)))]; % assumes all the same size!
+%         dataValuesInt = [dataValuesInt, zeros(size(Samples(:)))]; % assumes all the same size!
+        dataValuesInt = [dataValuesInt, zeros(nSamplesExpected,1)];
         chNames = [chNames,chNamesFromXls(iCh)];
     end
-    
-    
 end
 
 

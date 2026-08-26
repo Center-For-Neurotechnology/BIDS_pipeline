@@ -161,15 +161,14 @@ dataStim{1} = (stimData(indSamplesOfInterestStim))';
 
 % thPulse = min(300, max([dataStim{1}])/3); % 1/3 of the max or 300mV DIFF
 % thPulse = 0.04; % changed  for MG245 bc of sync unconnected
-thPulse = 1;
+thPulse = 2; %changed for BW101 usually '1'
 indTimeAllSTIMPulses = find(diff([dataStim{1} 0]) <= -thPulse);
 % Detect pulses on analog inputs from NSP data
 if length(minDistSTIMPulses)>=1 && minDistSTIMPulses(1)>0
     indRepeatedPulses = find(diff([ 0 indTimeAllSTIMPulses])< minDistSTIMPulses(1));
     indTimeAllSTIMPulses(indRepeatedPulses) = [];% Get only first point of the pulse - remove subsequent points
 end
-% shift onset indices back into the clip window (they come out clip-relative from find)
-indTimeAllSTIMPulses = indTimeAllSTIMPulses + (indSamplesOfInterestStim(1) - 1);
+
 indTimeAllSTIM{1}  = indTimeAllSTIMPulses;
 
 end

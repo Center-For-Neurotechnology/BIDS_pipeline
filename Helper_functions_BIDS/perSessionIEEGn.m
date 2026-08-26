@@ -46,7 +46,7 @@ hdrn.hdr.nTrials = 1;
 % 
 
 %% get continuous recordings
-hdrn.label(strcmp(hdrn.label, 'SYNC')) = [];
+hdrn.label(strcmp(hdrn.label, 'LAMY1')) = [];
 nChannels = numel(hdrn.label);
 iChToExclude=[];
 [filepath,name,ext] = fileparts(foldername_neuralynx);
@@ -68,10 +68,6 @@ if ~isempty(iChToExclude)
     chNumber(iChToExclude)=[];
 end
 
-% hdrn.Fs = targetFs;
-% t0 = Timestamps(1); % microseconds
-% % Convert to datetime in UTC
-% dt = datetime(t0/1e6,'ConvertFrom','posixtime','TimeZone','UTC');
 
 
 cADBitVolts = split(Header{17},' '); % field 17 is the ADBitVolts - use to get amploitude in Volts

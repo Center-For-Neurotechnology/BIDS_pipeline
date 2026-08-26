@@ -40,10 +40,10 @@ HED = 'n/a';
 cerestimAllBanks = [channInfo.bankInfo.bankANSP; channInfo.bankInfo.bankBNSP; channInfo.bankInfo.bankCNSP];
 stStimSites = load(fileNameStimSites);
 % stimLogChannels = stimLogChannels.stimchans(:,2:3); % works for single site (2 channels) stim
-% stimCh1=unique(stStimSites.stimchans(:,2)); % in the new log files stimchans contains ALL the parameters information 
-% stimCh2=unique(stStimSites.stimchans(:,3));
-stimCh1=unique(stStimSites.stimchans(:,1)); % old log files stimchans contains only chan and trial information 
-stimCh2=unique(stStimSites.stimchans(:,2));
+stimCh1=unique(stStimSites.stimchans(:,2)); % in the new log files stimchans contains ALL the parameters information 
+stimCh2=unique(stStimSites.stimchans(:,3));
+% stimCh1=unique(stStimSites.stimchans(:,1)); % old log files stimchans contains only chan and trial information 
+% stimCh2=unique(stStimSites.stimchans(:,2));
 
 % STIMULATION CHANNELS
 nStim = length(stimCh1);
@@ -55,6 +55,7 @@ stimLogChannelsNSP = [];
 
 
 channInfo = findChannelNamesInNSX(channInfo, [], {filenameNSx_nsp1, filenameNSx_nsp2});
+
 % % accounting for cerestim and nsp channel offsets and nsp2 = nsp1 + 128
 % for i = 1:size(stimLogChannels,1)
 %     for j = 1:size(stimLogChannels,2)
@@ -144,9 +145,7 @@ timeInfo.endNSxSec = endNSxSec;
 dirResults = '';
 %AINP STIM Channel
 stimAINPChNames = stimainp;
-%alignAINPChNames = stimAINPChNames;
-%stimAINPChNames = {'SYNC9', 'ainp9'};%SEND STIM'}; % 'SYNC','ainp6', 'ainp7'}; % all stim, random stim (random stim is for CLoSES), detected stim
- 
+% alignAINPChNames = stimAINPChNames; % we forgot to connect the AINP to NSP1 -> therefore we need something to align the data
 % Find channel names
 % channInfo = findChannelNamesInNSxBIDS(channInfo, [], fileNameNSxPerNSP); 
 titName = 'bids';
@@ -184,22 +183,41 @@ if ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2) %% function does
 end
 
 % reconcile detected onsets vs log: keep only as many as the log lists
-nLog = size(stStimSites.stimchans, 1);        % events in the txt/OR file (460)
-nDet = numel(idxNsp1);                          % detected onsets (465)
+nLog = size(stStimSites.stimchans, 1);        % events in the txt/OR file
+
+% guard idxNsp2 so numel/indexing don't error when nsp2 is absent
+if ~exist('idxNsp2','var') || isempty(idxNsp2), idxNsp2 = []; end
+
+hasStimNsp2 = ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2);
+hasStimNsp1 = ~isempty(idxNsp1);
+
+% detected count = whichever NSP(s) actually recorded stim
+if hasStimNsp1 && hasStimNsp2
+    nDet = min(numel(idxNsp1), numel(idxNsp2));
+elseif hasStimNsp1
+    nDet = numel(idxNsp1);
+else
+    nDet = numel(idxNsp2);
+end
 
 if nDet > nLog
     warning('Detected %d stim onsets but log has %d; dropping the final %d detected.', ...
             nDet, nLog, nDet - nLog);
-    idxNsp1 = idxNsp1(1:nLog);
-    if ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2)
-        idxNsp2 = idxNsp2(1:nLog);
-    end
+    if hasStimNsp1, idxNsp1 = idxNsp1(1:nLog); end
+    if hasStimNsp2, idxNsp2 = idxNsp2(1:nLog); end
+    nDet = nLog;
 elseif nDet < nLog
     error('Detected %d stim onsets but log has %d — fewer detections than expected, not safe to trim.', ...
           nDet, nLog);
 end
 
-nStimEvents = numel(idxNsp1);                      
+if hasStimNsp1 && hasStimNsp2
+    nStimEvents = min(numel(idxNsp1), numel(idxNsp2));
+elseif hasStimNsp2
+    nStimEvents = numel(idxNsp2);
+else
+    nStimEvents = numel(idxNsp1);
+end                   
 
 stimTimeON_nsp1 = idxNsp1/hdrNS3_nsp1.hdr.Fs{1}; % converting time from index number to seconds (sec = index/sampling rate)
 if ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2)
@@ -210,9 +228,9 @@ stimTimeOFF_nsp1 = stimTimeON_nsp1+stimParameters.stimPulseDuration;
 if ~isempty(filenameNSx_nsp2) && any(channInfo.NSPnumber(:)==2)
     stimTimeOFF_nsp2 = stimTimeON_nsp2+stimParameters.stimPulseDuration;
 end
-% map each event to its unique pair (order-independent match, validated: no zeros)
-%eventChans  = sort(stStimSites.stimchans(:, 2:3), 2); %new logfile config
-eventChans  = sort(stStimSites.stimchans(:, 1:2), 2); %old logfile config
+%% map each event to its unique pair (order-independent match, validated: no zeros)
+eventChans  = sort(stStimSites.stimchans(:, 2:3), 2); %new logfile config
+% eventChans  = sort(stStimSites.stimchans(:, 1:2), 2); %old logfile config
 uniquePairs = sort(channInfo.stimChNumber', 2);
 [~, pairIdxPerEvent] = ismember(eventChans, uniquePairs, 'rows');% map each event to its unique pair (order-independent match, validated: no zeros)
 
@@ -265,7 +283,7 @@ varNames = {'onset_sec','duration_ms','electrical_stimulation_trial_type','respo
     'electrical_stimulation_Channel1Stim','electrical_stimulation_Channel1StimNSP',...
     'electrical_stimulation_Channel2Stim','electrical_stimulation_Channel2StimNSP'};
 
-if ~isempty(stimTimeON_nsp1) % avoid saving an empty file if there were no stim events in that nsp
+if ~isempty(stimTimeON_nsp1) && any(channInfo.NSPnumber(:)==1) % avoid saving an empty file if there were no stim events in that nsp
     table_eventsTSV_nsp1 = table(stimTimeON_nsp1,stimPulseDuration,stimTrialType,responseTime,stimFile,hed,...
         stimTimeON_nsp1,stimTimeOFF_nsp1,stimFrequency,stimCurrent,stimBipolarSites(:,1),stim_type,...
         stimBipolarSites(:,2),stimBipolarSites(:,3),stimBipolarSites(:,4),stimBipolarSites(:,5),...

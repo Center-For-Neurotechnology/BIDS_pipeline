@@ -26,9 +26,9 @@ end
 if ~isfield(channInfo,'NSPnumber')
     channInfo.NSPnumber=1; %Default is NSP1 if not specified
 end
-if ~isfield(channInfo,'stimChNumberInNSX') && isfield(channInfo,'stimChNumber')
-    channInfo.stimChNumberInNSX= channInfo.stimChNumber(:); 
-end
+% if ~isfield(channInfo,'stimChNumberInNSX') && isfield(channInfo,'stimChNumber')
+%     channInfo.stimChNumberInNSX= channInfo.stimChNumber(:); 
+% end
 
 % % Start Diary
 % diary([dirResults,filesep,'log',pName,'scriptCheckStimInNSX.log'])

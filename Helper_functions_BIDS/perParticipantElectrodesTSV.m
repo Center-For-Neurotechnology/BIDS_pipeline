@@ -19,14 +19,16 @@ filename_electrodesTSV = [directoryBIDS,'/',sub_XXXX,'/ses-postimp/ieeg/',sub_XX
 % % electrodeInfo_RAS = readtable(filename_RAS);
 RASdata = importdata(filename_RAS);
 name=RASdata.textdata(2:end,1);
-x=RASdata.data(1:end,1);
-y=RASdata.data(1:end,2);
-z=RASdata.data(1:end,3);
+x=RASdata.textdata(2:end,2);
+y=RASdata.textdata(2:end,3);
+z=RASdata.textdata(2:end,4);
 % type=test_RAS(:,5);
 manufacturer=RASdata.textdata(2:end,6);
 size_var=RASdata.data(1:end,6);
 group=RASdata.textdata(2:end,8);
 hemisphere=RASdata.textdata(2:end,9);
+anatLoc=RASdata.textdata(2:end,10);
+volumeLabel = RASdata.textdata(2:end,19);
 % required columns
 % % name = electrodeInfo_RAS(:,1); % Name of the electrode contact point (ie. RAMY1)
 % The positions of the center of each electrode in xyz space. 
@@ -45,9 +47,9 @@ type = repmat({'n/a'},size(name));%height(electrodeInfo_RAS),1); % electrode typ
 impedance = repmat({'n/a'},size(name));%height(electrodeInfo_RAS),1); % electrode impedance in kOhm.
 
 %% saving as .tsv
-varNames = {'name','x','y','z','size','material','manufacturer','group',...
+varNames = {'name','x','y','z','size','material','manufacturer','anatomical labels','volumeLabel','group',...
     'hemisphere','type','impedance'};
-table_electrodesTSV = table(name, x, y, z, size_var, material, manufacturer, group, hemisphere, type, impedance,'VariableNames',varNames);
+table_electrodesTSV = table(name, x, y, z, size_var, material, manufacturer, anatLoc, volumeLabel, group, hemisphere, type, impedance,'VariableNames',varNames);
 % table_electrodesTSV.Properties.VariableNames = varNames;
 % table_electrodesTSV = renamevars(table_electrodesTSV,1:width(table_electrodesTSV),varNames);
 % writetable(splitvars(table_electrodesTSV), filename_electrodesTSV, 'FileType', 'text', 'Delimiter', '\t');

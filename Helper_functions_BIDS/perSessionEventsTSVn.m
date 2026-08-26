@@ -112,6 +112,15 @@ minDistSTIMPulses = 50;
 % [~, ~, ~, indTimeAllSTIM,  allChNames,hdr,~] = scriptCheckStimInNeuralynx(posFixNCS, '', dirRawData, filename_chanListEMU, [], [], stimChNames, channInfo,[], startNSxSec, endNSxSec);
 indTimeAllSTIM = indTimeAllSTIM{1};   % unwrap to match your old variable shape
 
+%Cute alignment prompt
+nStimLog = size(stimBipolarSites,1);       % number of stim sites/events from the logfile
+nStimNSX = numel(indTimeAllSTIM);          % number of stim pulses detected in the NSX
+fprintf('Number of stim from logfile: %d, Number of stim from NSX: %d\n', nStimLog, nStimNSX);
+if nStimLog ~= nStimNSX
+    warning('Stim count mismatch: logfile has %d, NSX detected %d (difference of %d).', ...
+            nStimLog, nStimNSX, abs(nStimLog - nStimNSX));
+end
+
 %% Get stim pulse start and end time
 % new stim arrays
 stimTimeON = indTimeAllSTIM;
