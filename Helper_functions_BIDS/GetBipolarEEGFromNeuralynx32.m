@@ -161,7 +161,7 @@ dataStim{1} = (stimData(indSamplesOfInterestStim))';
 
 % thPulse = min(300, max([dataStim{1}])/3); % 1/3 of the max or 300mV DIFF
 % thPulse = 0.04; % changed  for MG245 bc of sync unconnected
-thPulse = 2; %changed for BW101 usually '1'
+thPulse = 1; %changed for BW101 usually '1'
 indTimeAllSTIMPulses = find(diff([dataStim{1} 0]) <= -thPulse);
 % Detect pulses on analog inputs from NSP data
 if length(minDistSTIMPulses)>=1 && minDistSTIMPulses(1)>0

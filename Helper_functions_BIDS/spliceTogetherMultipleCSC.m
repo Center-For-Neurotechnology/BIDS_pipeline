@@ -10,14 +10,14 @@ Output = csc files in the same directory, with posfix _xxxxyyyymerged.
 %% 
 clear;clc
 
-dirData = 'K:\StimDataBackup\Data_Stimulation\MG216\NetworkSleep1\rawData\'; % path to folder containing neuralynx data
+dirData = 'K:\StimDataBackup\Data_Stimulation\MG258\eTBS\rawData\'; % path to folder containing neuralynx data
 
-posFixNCS{1} = '_0012'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
-posFixNCS{2} = '_0013'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
+posFixNCS{1} = '_0003'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
+posFixNCS{2} = '_0004'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
 % posFixNCS{3} = '_0006';
 % posFixNCS{4} = '_0007';
 
-posFix_combined = '_0012_13_combined';
+posFix_combined = '_0003_4_combined';
 
 
 

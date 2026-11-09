@@ -46,7 +46,7 @@ hdrn.hdr.nTrials = 1;
 % 
 
 %% get continuous recordings
-hdrn.label(strcmp(hdrn.label, 'LAMY1')) = [];
+hdrn.label(strcmp(hdrn.label, 'SYNC')) = [];
 nChannels = numel(hdrn.label);
 iChToExclude=[];
 [filepath,name,ext] = fileparts(foldername_neuralynx);

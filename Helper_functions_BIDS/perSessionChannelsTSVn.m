@@ -38,7 +38,7 @@ for i = 1:size(list,1)
     [filepath,name,ext] = fileparts(filename);
     if length(name) >= 2
         % select files ending in .ncs and not starting with 'CSC' (get sync later in perSessionEventsTSV)
-        if strcmp(strtrim(ext),'.ncs') && ~strcmp(name(1:2),'CS')
+        if strcmp(strtrim(ext),'.ncs') && ~strcmp(name(1:2),'CS') && ~strncmp(name,'Grd',3)
             split_name_fromPOS = strsplit(name,'_');
             name = split_name_fromPOS{1};
             channel_list = [channel_list; name];

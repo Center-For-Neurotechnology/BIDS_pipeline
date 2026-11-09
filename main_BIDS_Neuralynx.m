@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
-directoryBIDS = 'K:\BIDsified_StimData_EMU'; 
-sub_XXXX = 'sub-6h0n'; % MG209r
+directoryBIDS = ''; 
+sub_XXXX = ''; % MG258
 
 subjDir = fullfile(directoryBIDS, sub_XXXX);
 if ~isfolder(subjDir)
@@ -32,9 +32,10 @@ end
 % perParticipantImageJSON(sub_XXXX, preImplantScan, postImplantScan, directoryBIDS)
 
 %% _electrodes.tsv
-% create a file that gives the location, size and other properties of iEEG electrodes
+% create a file that gives the location, size and other properties of iEEG
+% electrodes - use referential parcellation file _RAS_Electrode_Parc.csv
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'O:\ElectrodeLocalizations\thalamicMapping\MG209revised\MG209revised_SurferOutput\MG209revised_RAS_Electrode_Parc.csv';
+filename_RAS = '';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
@@ -42,11 +43,11 @@ perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 %% _channels.tsv
 % create a tsv file containing additional descriptions of the channels
 % saved as: directoryBIDS\sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_channels.tsv
-taskName = 'ThalamicNetwork'; %need to process wake3
-ieeg_run = '03'; % BIDS stim session number for this participant
-posFixNCS = '_0003'; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
+taskName = ''; 
+ieeg_run = ''; % BIDS stim session number for this participant
+posFixNCS = ''; % string after channel name in nsc file name (e.g. for file 'LTMb-Pul9_0017.ncs', posFixNCS = '_0017')
 badChannels = ''; % assuming empty for now, can write a script to make this mat file later if needed
-foldername_neuralynx = 'K:\StimDataBackup\Data_Stimulation\MG209revised\ThalamicNetwork\rawData\C3_0003.ncs'; 
+foldername_neuralynx = ''; 
 [hdrn] = perSessionChannelsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,badChannels,posFixNCS);
 
 
@@ -64,21 +65,20 @@ perSessionIEEGn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,hd
 % Stimulation Parameters
 stimParameters.stimPulseDuration = 0.233; % in mS
 stimParameters.stimFrequency = 100; % in Hz
-stimParameters.stimCurrent = 7; % in mA;
+stimParameters.stimCurrent = 2; % in mA;
 stimParameters.stim_type = {'Bipolar','biphasic'};
 % Assign channel numbers from 1:256, irrespective of NSP number
-channInfo.bankInfo.bankA =   1:32;
+channInfo.bankInfo.bankA =   33:64;
 channInfo.bankInfo.bankB =   65:96; 
-channInfo.bankInfo.bankC =   129:120;     
+channInfo.bankInfo.bankC =   129:160;   
 channInfo.pName = sub_XXXX;
-filename_chanListEMU = 'K:\StimDataBackup\Data_Stimulation\MG209revised\preprocessed_results\MG209revised_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
-fileNameStimSites = 'K:\StimDataBackup\Data_Stimulation\MG209revised\ThalamicNetwork\Logfiles\NetworkSweepBipolChans-02-Dec-2024_12-54-42.mat'; % updated cerestim logfile format
-stimChNames = 'CSC289'; % SYNC channel at CSC289
+filename_chanListEMU = ''; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
+fileNameStimSites = ''; % updated cerestim logfile format
+stimChNames = {''}; % SYNC channel at CSC289
 startNSxSec= 0; %if all file: 0 % 0.00*10^x/2000
 endNSxSec = []; %if all file:[]
 perSessionEventsTSVn(directoryBIDS,sub_XXXX,taskName,ieeg_run,foldername_neuralynx,stimParameters,...
     channInfo,fileNameStimSites,hdrn,stimChNames,posFixNCS,filename_chanListEMU,startNSxSec,endNSxSec)
-% 
 % % %% _events.json
 % % % create sub_XXXX\ses-postimp\ieeg\sub-XXXX_ses-postimp_task-NetworkWake1RAWNSP1_run-01_events.json
 % % OperatingSystem = 'Windows 11 Pro';

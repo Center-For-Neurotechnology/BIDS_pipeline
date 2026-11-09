@@ -49,7 +49,7 @@ selBipolar1 = reshape(1:length(selChNames1),2,length(selChNames1)/2)'; %[1,2;3,4
 selChNamesInCERESTIM = channInfo.stimChNumber(1,:)'; %[1 2 13 14 18 19 39 40];
 
 
-[dataBipolarPerCh{1}, chNamesBipolar{1}, dataStim, indTimeAllSTIM, dataReferentialPerCh, chNamesRefToPlot, allChNames{1}, hdr] = GetBipolarEEGFromNeuralynx(posFixNCS, dirPatient, dirData, xlsFileName, selChNames1, selBipolar1, stimAINPChNames, startNSxSec, endNSxSec);
+[dataBipolarPerCh{1}, chNamesBipolar{1}, dataStim, indTimeAllSTIM, dataReferentialPerCh, chNamesRefToPlot, allChNames{1}, hdr] = GetBipolarEEGFromNeuralynx32(posFixNCS, dirPatient, dirData, xlsFileName, selChNames1, selBipolar1, stimAINPChNames, startNSxSec, endNSxSec);
 if channInfo.isStimInAINP ==1 % whether stim information is on AINP or we should get it from stim artifact on stim channels
     indTimeSTIM = indTimeAllSTIM{1};
 else

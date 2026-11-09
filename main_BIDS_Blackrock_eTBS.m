@@ -1,7 +1,7 @@
 %% set up BIDS directory
 % files will be saved in: directoryBIDS/sub_XXXX/
-directoryBIDS = 'J:\BIDsified_StimData_EMU'; 
-sub_XXXX = 'sub-8u1w'; % the deidentified patient ID
+directoryBIDS = ''; 
+sub_XXXX = ''; % the deidentified patient ID
 
 subjDir = fullfile(directoryBIDS, sub_XXXX);
 if ~isfolder(subjDir)
@@ -42,7 +42,7 @@ ft_defaults
 %% _electrodes.tsv
 % create a file that gives the location, size and other properties of iEEG electrodes
 % saved as: directoryBIDS/sub_XXXX/ses-postimp/ieeg/sub-XXXX_ses-postimp_electrodes.tsv
-filename_RAS = 'J:\StimDataBackup\Data_Stimulation\MG249\preprocessed_results\MG249_RAS_Electrode_Parc.csv';
+filename_RAS = '';
 perParticipantElectrodesTSV(sub_XXXX, filename_RAS, directoryBIDS)
 
 
@@ -54,8 +54,8 @@ taskName = 'eTBS';
 ieeg_run = '01';
 badChannels_nsp1 = ''; % assuming empty for now, can write a script to make this mat file later
 badChannels_nsp2 = '';
-filenameNS3_nsp1 = 'J:\StimDataBackup\Data_Stimulation\MG249\eTBS\NSP1\20260729-111940-011-combined.ns3'; % path to nsp1 ns3 
-filenameNS3_nsp2 = 'J:\StimDataBackup\Data_Stimulation\MG249\eTBS\NSP2\20260729-111941-011-combined.ns3';  % path to nsp2 ns3, leave empty if just using nsp1
+filenameNS3_nsp1 = ''; % path to nsp1 ns3 
+filenameNS3_nsp2 = '';  % path to nsp2 ns3, leave empty if just using nsp1
 [hdrNS3_nsp1, hdrNS3_nsp2] = perSessionChannelsTSV(directoryBIDS,sub_XXXX,taskName,ieeg_run,...
     filenameNS3_nsp1,filenameNS3_nsp2,badChannels_nsp1,badChannels_nsp2);
 
@@ -85,8 +85,8 @@ channInfo.bankInfo.bankANSP = 1;% Which NSP (1 or 2) correspond to each bank
 channInfo.bankInfo.bankBNSP = 1;
 channInfo.bankInfo.bankCNSP = 2;
 
-% filename_chanListEMU = 'G:\BIDScodeTest\MG209\MG209revised_Chan_List.xlsx'; % Channel list (Neuralynx CSC files are loaded alphabetically, different from the EMU channel list order)
-logFileDirectory = 'J:\StimDataBackup\Data_Stimulation\MG249\eTBS\Logfiles\'; % updated cerestim log file format
+
+logFileDirectory = ''; % updated cerestim log file format
 stimChNames = 'SYNC9'; 
 perSessionEventsTSV_eTBS(directoryBIDS,sub_XXXX,taskName,ieeg_run,filenameNS3_nsp1,filenameNS3_nsp2,stimParameters,...
     channInfo,logFileDirectory,hdrNS3_nsp1,hdrNS3_nsp2)
